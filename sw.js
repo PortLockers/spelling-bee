@@ -1,7 +1,8 @@
 // Offline support: the page is network-first (updates show up right away),
 // recordings are cache-first (saved the first time each one plays).
-const CACHE = 'spelling-bee-v1';
-const CORE = ['./', './index.html', './manifest.webmanifest', './icon.svg', './audio/intro.mp3', './audio/retry.mp3'];
+const CACHE = 'spelling-bee-v2';
+const CORE = ['./', './index.html', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png',
+  './audio/intro.mp3', './audio/retry.mp3'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)));
