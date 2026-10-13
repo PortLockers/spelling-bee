@@ -115,6 +115,37 @@ select,input[type=range]{font:inherit;padding:6px;flex:1;min-width:160px}
       <button class="mode green" onclick="pickLists('bee')"><span class="big">🏆</span><span class="t">Bee Challenge</span><span class="d">Like the real bee! One mistake and you're out. Beat your record.</span></button>
       <button class="mode ghost" onclick="showList()"><span class="big">📚</span><span class="t">My Word List</span><span class="d">All the words, how well you know each one, and settings.</span></button>
     </div>
+    <div class="row" style="margin-top:14px">
+      <button class="ghost small" id="installBtn2" onclick="doInstall()" style="display:none">📲 Install app</button>
+      <button class="ghost small" onclick="showSetup()">🔧 Setup &amp; test (mic, sound, install)</button>
+    </div>
+  </section>
+
+  <!-- SETUP / DIAGNOSTICS -->
+  <section id="s-setup" class="hidden">
+    <div class="card">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <button class="ghost small" onclick="stopMicTest();go('home')">← Home</button>
+        <b>🔧 Setup &amp; test</b><span></span>
+      </div>
+      <div id="diag" class="hint" style="line-height:1.7"></div>
+      <div id="installBox" style="margin-top:12px"></div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">🔊 1. Sound test</h3>
+      <p class="muted" style="margin-top:0">You should hear Ava say a word.</p>
+      <button class="blue" onclick="playSeq([INTRO,clipOf(WORDS[13],'w')])">🔊 Play Ava</button>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">🎤 2. Microphone test</h3>
+      <p class="muted" style="margin-top:0">Tap Start, allow the microphone, then say <b>"C… A… T…"</b>. The bar should jump when you talk.</p>
+      <div class="progress" style="height:22px"><div id="micLevel" style="width:0%;background:var(--good)"></div></div>
+      <div class="row">
+        <button class="green" id="micTestBtn" onclick="startMicTest()">🎤 Start test</button>
+        <button class="ghost" onclick="stopMicTest()">⏹ Stop</button>
+      </div>
+      <div class="hint" id="micTestOut" style="margin-top:12px;font-family:monospace;font-size:.95rem;white-space:pre-wrap">Not started.</div>
+    </div>
   </section>
 
   <!-- PICK LISTS -->
@@ -728,7 +759,7 @@ const LETTER={a:'a',ay:'a',eh:'a',hey:'a',b:'b',be:'b',bee:'b',c:'c',see:'c',sea
   k:'k',kay:'k',okay:'k',l:'l',el:'l',ell:'l',m:'m',em:'m',n:'n',en:'n',o:'o',oh:'o',owe:'o',p:'p',pee:'p',pea:'p',
   q:'q',queue:'q',cue:'q',r:'r',are:'r',ar:'r',our:'r',s:'s',es:'s',ess:'s',t:'t',tea:'t',tee:'t',u:'u',you:'u',yu:'u',
   v:'v',vee:'v',w:'w',x:'x',ex:'x',y:'y',why:'y',wye:'y',z:'z',zee:'z',zed:'z',ñ:'ñ'};
-let rec_=null, listening=false, heardFinal='', autoCheck=false, silenceT=null, micFailed=false;
+let rec_=null, listening=false, heardFinal='', autoCheck=false, silenceT=null, micFailed=false, finishing=false, micStartAt=0;
 function lettersFrom(text){
   const raw=text.replace(/double\s*(u|you)/gi,' w ').replace(/\bn\s*(with\s*(a\s*)?)?tilde\b|\benye\b/gi,' ñ ')
     .replace(/[^A-Za-zñÑ' ]/g,' ').split(/\s+/).filter(Boolean);
@@ -750,39 +781,49 @@ function showHeard(letters){
 }
 function micStatus(t){$('micStatus').textContent=t;$('micStatus').classList.toggle('hidden',!t)}
 function micBtnIdle(){$('micBtn').textContent='🎤 Say the letters';$('micBtn').className='green'+(SR?'':' hidden')}
-function toggleMic(){ if(listening){ autoCheck?finishMic():stopMic(); } else { stopAudio(); startMic(); } }
-function startMic(){
-  if(!SR)return; stopMic();
-  if('speechSynthesis' in window)speechSynthesis.cancel();
-  const r=new SR(); rec_=r; r.lang='en-US'; r.continuous=true; r.interimResults=true;
-  heardFinal=''; micFailed=false; autoCheck=method()==='voice';
-  r.onresult=e=>{ if(r!==rec_)return; let interim='';
-    for(let i=e.resultIndex;i<e.results.length;i++){const x=e.results[i];
-      if(x.isFinal)heardFinal+=' '+x[0].transcript; else interim+=' '+x[0].transcript;}
-    const all=(heardFinal+' '+interim), stop=/\b(done|finished)\b/i.test(all);
+function toggleMic(){ if(listening){ finishMic(); } else { stopAudio(); startMic(); } }
+// Listens one phrase at a time and quietly restarts between phrases (Android Chrome's
+// continuous mode repeats earlier words). Stops after 2.5 s of silence once there are
+// letters, when she says "done", or after 30 s.
+function startMic(keep){
+  if(!SR)return;
+  if(!keep){stopMic(); heardFinal=''; autoCheck=method()==='voice'; micStartAt=Date.now(); showHeard([]);
+    if('speechSynthesis' in window)speechSynthesis.cancel();}
+  finishing=false; micFailed=false;
+  const r=new SR(); rec_=r; r.lang='en-US'; r.continuous=false; r.interimResults=true;
+  let sessionFinal='';
+  r.onresult=e=>{ if(r!==rec_)return; let interim=''; sessionFinal='';
+    for(let i=0;i<e.results.length;i++){const x=e.results[i];
+      if(x.isFinal)sessionFinal+=' '+x[0].transcript; else interim+=' '+x[0].transcript;}
+    const all=heardFinal+' '+sessionFinal+' '+interim, stop=/\b(done|finished)\b/i.test(all);
     showHeard(lettersFrom(all.replace(/\b(done|finished)\b/gi,' ')));
     clearTimeout(silenceT);
     if(stop)return finishMic();
-    if(autoCheck&&$('answer').value)silenceT=setTimeout(finishMic,2500);   // she stopped talking → check it
+    if($('answer').value)silenceT=setTimeout(finishMic,2500);   // she stopped talking → done
   };
-  r.onerror=e=>{ if(r!==rec_)return; micFailed=true;
+  r.onerror=e=>{ if(r!==rec_)return;
+    if(e.error==='no-speech'||e.error==='aborted')return;          // just silence — onend restarts
+    micFailed=true;
     const blocked=e.error==='not-allowed'||e.error==='service-not-allowed';
-    micStatus({'no-speech':'I didn\'t hear anything — tap 🎤 and try again.','network':'Listening needs the internet. Tap 🎤 to try again, or type.',
-      'aborted':''}[e.error]??(blocked?'The microphone is blocked — switched to typing. (Allow the mic in Chrome to use your voice.)':'Mic problem: '+e.error));
+    micStatus(e.error==='network'?'Listening needs the internet. Tap 🎤 to try again, or type.':
+      blocked?'The microphone is blocked — switched to typing. (See 🔧 Setup & test on the home screen.)':'Mic problem: '+e.error);
     if(blocked){S.answer='type';save();setVoiceUI(false);}
   };
-  r.onend=()=>{ if(r!==rec_)return; listening=false; clearTimeout(silenceT); micBtnIdle();
+  r.onend=()=>{ if(r!==rec_)return;
+    heardFinal+=' '+sessionFinal;
+    if(!micFailed&&!finishing&&Date.now()-micStartAt<30000)return startMic(true);   // keep listening
+    listening=false; clearTimeout(silenceT); micBtnIdle();
     if(micFailed)return;
     if(autoCheck&&$('answer').value){autoCheck=false; submit();}
     else if(!$('answer').value)micStatus('I didn\'t hear any letters — tap 🎤 and try again.');
     else micStatus('Check the letters, fix any, then tap Check ✔');
   };
-  try{r.start()}catch(e){return}
-  listening=true; showHeard([]);
-  $('micBtn').textContent=autoCheck?'✔ I\'m done':'⏹ Stop';$('micBtn').className='red';
-  micStatus('🎤 I\'m listening… say each letter: "C… A… T…"');
+  try{r.start()}catch(e){micFailed=true;micStatus('Mic problem: '+e.message);return}
+  listening=true;
+  if(!keep){$('micBtn').textContent=autoCheck?'✔ I\'m done':'⏹ Stop';$('micBtn').className='red';
+    micStatus('🎤 I\'m listening… say each letter: "C… A… T…"');}
 }
-function finishMic(){clearTimeout(silenceT); if(rec_&&listening){try{rec_.stop()}catch(e){}}}
+function finishMic(){clearTimeout(silenceT); finishing=true; if(rec_){try{rec_.stop()}catch(e){}}}
 function stopMic(){autoCheck=false; clearTimeout(silenceT); const r=rec_; rec_=null; if(r){try{r.abort()}catch(e){}} listening=false; micBtnIdle();}
 function resetMic(){stopMic();$('heardTiles').classList.add('hidden');$('heardTiles').innerHTML='';micStatus('');}
 
@@ -801,6 +842,80 @@ function resetAll(){
   if(!confirm('Erase all spelling progress and stars?'))return;
   S.words={};S.stars=0;S.beeBest=0;save();showList();
 }
+
+// ---------- setup & test ----------
+let installEvt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;
+  const b=$('installBtn2'); if(b)b.style.display=''; if(!$('s-setup').classList.contains('hidden'))renderDiag();});
+window.addEventListener('appinstalled',()=>{installEvt=null;$('installBtn2').style.display='none';
+  if(!$('s-setup').classList.contains('hidden'))renderDiag();});
+async function doInstall(){
+  if(!installEvt)return showSetup();
+  installEvt.prompt(); const r=await installEvt.userChoice; installEvt=null; $('installBtn2').style.display='none';
+  if(!$('s-setup').classList.contains('hidden'))renderDiag(r.outcome);
+}
+const isSamsung=/SamsungBrowser/i.test(navigator.userAgent);
+const isInstalled=()=>matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches;
+function browserName(){const u=navigator.userAgent;
+  return /SamsungBrowser/.test(u)?'Samsung Internet':/EdgA?\//.test(u)?'Edge':/Firefox|FxiOS/.test(u)?'Firefox':
+    /OPR\//.test(u)?'Opera':/CriOS|Chrome\//.test(u)?'Chrome':/Safari/.test(u)?'Safari':'Unknown'}
+async function renderDiag(installOutcome){
+  const ok=b=>b?'✅':'❌';
+  let perm='unknown';
+  try{perm=(await navigator.permissions.query({name:'microphone'})).state}catch(e){}
+  const lines=[
+    '<b>Browser:</b> '+browserName()+(isSamsung?' ⚠️ <b>Please use Chrome</b> — Samsung Internet can\'t listen for letters.':''),
+    ok(isSecureContext)+' Secure page (https)',
+    ok(!!SR)+' Voice spelling supported in this browser',
+    (perm==='granted'?'✅':perm==='denied'?'❌':'❔')+' Microphone permission: <b>'+perm+'</b>'+
+      (perm==='denied'?' — tap the icon left of the address bar → Permissions → Microphone → Allow, then reload.':''),
+    ok(isInstalled())+' Running as installed app',
+    '<span class="muted" style="font-size:.85rem">'+esc(navigator.userAgent)+'</span>'];
+  $('diag').innerHTML=lines.join('<br>');
+  let ib='';
+  if(isInstalled())ib='✅ The app is installed and open.';
+  else if(installEvt)ib='<button onclick="doInstall()">📲 Install the app</button>';
+  else if(installOutcome==='accepted')ib='✅ Installing… look on the home screen or in the app drawer in a few seconds.';
+  else ib='<div class="muted">No install button yet. In <b>Chrome</b>: tap ⋮ → <b>Add to Home screen</b> → <b>Install</b>.'+
+    (isSamsung?' In Samsung Internet: tap ☰ → <b>Add page to</b> → <b>Home screen</b> (but voice spelling needs Chrome).':'')+'</div>';
+  $('installBox').innerHTML=ib;
+}
+function showSetup(){go('setup');renderDiag()}
+let testStream=null, testRaf=0, testRec=null;
+function logTest(t){const o=$('micTestOut'); o.textContent=(o.textContent==='Not started.'?'':o.textContent+'\n')+t; o.scrollTop=1e6}
+async function startMicTest(){
+  stopMicTest(); stopAudio(); $('micTestOut').textContent='';
+  // step 1: raw microphone (does any sound reach the page?)
+  try{
+    testStream=await navigator.mediaDevices.getUserMedia({audio:true});
+    logTest('✅ Microphone allowed.');
+    const ac=new (window.AudioContext||window.webkitAudioContext)(), an=ac.createAnalyser(); an.fftSize=512;
+    ac.createMediaStreamSource(testStream).connect(an); const buf=new Uint8Array(an.fftSize); let peak=0;
+    const tick=()=>{an.getByteTimeDomainData(buf); let m=0; for(const v of buf)m=Math.max(m,Math.abs(v-128));
+      peak=Math.max(peak,m); $('micLevel').style.width=Math.min(100,m*1.6)+'%'; testRaf=requestAnimationFrame(tick)};
+    tick();
+    await new Promise(r=>setTimeout(r,2500));
+    logTest(peak>8?'✅ Sound is reaching the app.':'⚠️ Very quiet — is something covering the mic, or another app using it?');
+    cancelAnimationFrame(testRaf); testStream.getTracks().forEach(t=>t.stop()); testStream=null; ac.close();
+  }catch(e){logTest('❌ Microphone error: '+e.name+' — '+e.message); renderDiag(); return}
+  // step 2: speech recognition (what does it hear?)
+  if(!SR){logTest('❌ This browser has no speech recognition. Open the app in Chrome.');return}
+  logTest('🎤 Now listening for letters — say "C… A… T…" (8 seconds)');
+  const r=new SR(); testRec=r; r.lang='en-US'; r.continuous=false; r.interimResults=true;
+  let heard='';
+  r.onstart=()=>logTest('…recognizer started');
+  r.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){const x=e.results[i];
+    if(x.isFinal){heard+=' '+x[0].transcript; logTest('heard: "'+x[0].transcript.trim()+'"')}}};
+  r.onerror=e=>logTest('❌ Recognizer error: '+e.error+(e.error==='network'?' (needs internet)':e.error==='not-allowed'?' (mic blocked)':
+    e.error==='service-not-allowed'?' (speech service off — check the Google app is enabled)':e.error==='language-not-supported'?' (install English in Google voice typing)':''));
+  r.onend=()=>{logTest(heard.trim()?'✅ Letters understood as: '+lettersFromText(heard).join(' ').toUpperCase():'⚠️ Nothing was recognized.');
+    testRec=null; $('micLevel').style.width='0%';};
+  try{r.start()}catch(e){logTest('❌ Could not start: '+e.message)}
+  setTimeout(()=>{if(testRec===r)try{r.stop()}catch(e){}},8000);
+}
+function lettersFromText(t){const keep=cur; cur={w:'\u0000'}; try{return lettersFrom(t)}finally{cur=keep}}
+function stopMicTest(){cancelAnimationFrame(testRaf); if(testStream){testStream.getTracks().forEach(t=>t.stop());testStream=null}
+  if(testRec){try{testRec.abort()}catch(e){} testRec=null} const l=$('micLevel'); if(l)l.style.width='0%';}
 
 load(); renderTop();
 if('speechSynthesis' in window){loadVoices(); speechSynthesis.onvoiceschanged=loadVoices;}
