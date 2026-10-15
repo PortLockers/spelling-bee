@@ -286,6 +286,11 @@ select,input[type=range]{font:inherit;padding:6px;flex:1;min-width:160px}
       <h3 style="margin-top:0">⚙️ Settings</h3>
       <label class="set">Speed <input type="range" id="rate" min="0.5" max="1.2" step="0.05" oninput="saveRate()"></label>
       <label class="set">Backup voice <small class="muted">(only if a recording won't play)</small> <select id="voiceSel" onchange="saveVoice()"></select></label>
+      <label class="set">Merriam-Webster key <input id="mwKey" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="paste your dictionaryapi.com key"
+        style="flex:1;min-width:200px;font:inherit;padding:8px;border-radius:10px;border:2px solid var(--line)"></label>
+      <div class="row" style="justify-content:flex-start;align-items:center;margin-bottom:12px">
+        <button class="ghost small" onclick="saveMwKey()">💾 Save key &amp; test</button><span id="mwStatus" class="muted"></span>
+      </div>
       <div class="row" style="justify-content:flex-start">
         <button class="ghost small" onclick="playSeq([INTRO,...SAMPLE])">🔊 Test voice</button>
         <button class="ghost small" onclick="askName()">✏️ Change name</button>
@@ -753,7 +758,7 @@ function showWord(){
   $('nextRow').classList.add('hidden');
   $('answer').value='';$('answer').placeholder='type here…';$('answer').disabled=false;$('checkBtn').disabled=false;
   resetMic();
-  $('hintDef').classList.toggle('hidden',!cur.def); $('hintSen').classList.toggle('hidden',!cur.sen);
+  $('hintDef').classList.toggle('hidden',!cur.def&&!S.mwKey); $('hintSen').classList.toggle('hidden',!cur.sen);
   const m=method();
   $('typeArea').classList.toggle('hidden',m==='aloud'); $('aloudArea').classList.toggle('hidden',m!=='aloud');
   setVoiceUI(m==='voice');
@@ -793,11 +798,50 @@ function coverWord(){
   afterPrompt();
 }
 const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-function blank(text){return esc(text).replace(new RegExp(cur.w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),'_____')}
+function blank(text){return blankIn(text,cur.w)}
 function showHint(kind){
-  const t=kind==='def'?cur.def:cur.sen;
-  $('hintBox').innerHTML='<div class="hint"><b>'+(kind==='def'?'📖 Definition: ':'💬 Sentence: ')+'</b>'+(kind==='def'?esc(t):blank(t))+'</div>';
-  hear([clipOf(cur,kind==='def'?'d':'s')]);
+  if(kind==='sen'){
+    $('hintBox').innerHTML='<div class="hint"><b>💬 Sentence: </b>'+blank(cur.sen)+'</div>';
+    return hear([clipOf(cur,'s')]);
+  }
+  const x=cur, useMW=!!S.mwKey&&navigator.onLine!==false;
+  renderDef(x,null,useMW);
+  if(x.def)hear([clipOf(x,'d')]);                       // Ava reads the simple meaning
+  if(useMW)mwLookup(x.w).then(mw=>{
+    if(cur!==x)return; renderDef(x,mw,false);
+    if(!x.def&&mw&&mw.length)hear([{url:null,text:mw.map(e=>e.defs.join('. ')).join('. ')}]);
+  });
+}
+// ---------- Merriam-Webster Elementary Dictionary (only looked up when she taps 📖) ----------
+const mwCache=new Map();   // this visit only — nothing from M-W is stored on the device
+async function mwLookup(w){
+  if(mwCache.has(w))return mwCache.get(w);
+  try{
+    const r=await fetch('https://www.dictionaryapi.com/api/v3/references/sd2/json/'+encodeURIComponent(w.toLowerCase())+'?key='+encodeURIComponent(S.mwKey));
+    if(!r.ok)return null;
+    const j=await r.json();
+    // no match → M-W returns an array of spelling suggestions (strings)
+    const base=id=>id.split(':')[0].toLowerCase();
+    const out=(Array.isArray(j)?j:[]).filter(e=>e&&e.meta&&base(e.meta.id)===w.toLowerCase()&&e.shortdef&&e.shortdef.length)
+      .slice(0,3).map(e=>({fl:e.fl||'',defs:e.shortdef.slice(0,2)}));
+    mwCache.set(w,out); return out;
+  }catch(e){return null}
+}
+const blankIn=(text,w)=>esc(text).replace(new RegExp('(?<![A-Za-zÀ-ÿ])'+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![A-Za-zÀ-ÿ])','gi'),'_____');
+function renderDef(x,mw,loading){
+  const has=mw&&mw.length; let h='<div class="hint">';
+  if(has)h+='<b>📖 Merriam-Webster:</b>'+mw.map(e=>'<div style="margin-top:4px"><i>'+esc(e.fl)+'</i> — '+blankIn(e.defs.join('; '),x.w)+'</div>').join('')+
+    '<div class="muted" style="font-size:.8rem;margin-top:4px">From Merriam-Webster\'s Elementary Dictionary</div>';
+  else if(loading)h+='<div class="muted">Looking it up in Merriam-Webster…</div>';
+  if(x.def)h+='<div'+(has||loading?' style="margin-top:8px"':'')+'><b>'+(has||loading?'🐝 In simple words: ':'📖 Definition: ')+'</b>'+esc(x.def)+'</div>';
+  else if(!has&&!loading)h+='<div class="muted">No definition found for this word.</div>';
+  $('hintBox').innerHTML=h+'</div>';
+}
+function saveMwKey(){
+  S.mwKey=$('mwKey').value.trim(); save(); mwCache.clear();
+  if(!S.mwKey){$('mwStatus').textContent='Key removed.';return}
+  $('mwStatus').textContent='Testing…';
+  mwLookup('peel').then(mw=>{$('mwStatus').textContent=mw&&mw.length?'✅ Working! Definitions will come from Merriam-Webster.':'❌ That key didn\'t work (or no internet).'});
 }
 function addChar(c){const a=$('answer');a.value+=c;a.focus()}
 const norm=s=>s.trim().toLowerCase().replace(/\s+/g,'');
@@ -973,7 +1017,7 @@ function showList(){
   $('wordTable').innerHTML=WORDS.map(x=>{const r=S.words[x.w]||{right:0,wrong:0};
     return '<tr onclick="sayW('+x.i+')" style="cursor:pointer"><td><span class="dot lvl'+level(x.w)+'"></span>'+esc(x.w)+
       '</td><td>'+x.list+'</td><td>'+r.right+'</td><td>'+r.wrong+'</td></tr>'}).join('');
-  $('rate').value=S.rate||0.85; if('speechSynthesis' in window)loadVoices();
+  $('rate').value=S.rate||0.85; $('mwKey').value=S.mwKey||''; $('mwStatus').textContent=''; if('speechSynthesis' in window)loadVoices();
   go('list');
 }
 function resetAll(){
