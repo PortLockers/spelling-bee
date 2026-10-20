@@ -114,6 +114,7 @@ select,input[type=range]{font:inherit;padding:6px;flex:1;min-width:160px}
       <button class="mode" onclick="pickLists('practice')"><span class="big">✏️</span><span class="t">Spell It</span><span class="d">Hear a word, spell it out loud or type it. Tricky words come back more often.</span></button>
       <button class="mode blue" onclick="pickLists('learn')"><span class="big">👀</span><span class="t">Look, Say, Cover, Write</span><span class="d">See the word, hear each letter, then spell it from memory.</span></button>
       <button class="mode green" onclick="pickLists('bee')"><span class="big">🏆</span><span class="t">Bee Challenge</span><span class="d">Like the real bee! One mistake and you're out. Beat your record.</span></button>
+      <button class="mode hidden" id="vocabBtn" onclick="showVocabStudy()" style="background:#8e6bd6;color:#fff;box-shadow:0 4px 0 #5f43a0"><span class="big">🧠</span><span class="t">Word Meanings</span><span class="d">Learn what the vocabulary words mean, then take a quick quiz.</span></button>
       <button class="mode ghost" onclick="showList()"><span class="big">📚</span><span class="t">My Word List</span><span class="d">All the words, how well you know each one, and settings.</span></button>
     </div>
     <div class="row" style="margin-top:14px">
@@ -240,8 +241,39 @@ select,input[type=range]{font:inherit;padding:6px;flex:1;min-width:160px}
       <div id="doneMissed"></div>
       <div class="row" style="margin-top:12px">
         <button class="ghost" onclick="go('home')">🏠 Home</button>
-        <button onclick="startMode()">Play again 🐝</button>
+        <button onclick="playAgain()">Play again 🐝</button>
       </div>
+    </div>
+  </section>
+
+  <!-- VOCABULARY: study cards -->
+  <section id="s-vstudy" class="hidden">
+    <div class="card">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <button class="ghost small" onclick="stopAudio();go('home')">← Home</button>
+        <b>🧠 Word Meanings</b><span></span>
+      </div>
+      <p class="muted center">Read each word and what it means. Tap 🔊 to hear it. When you're ready, take the quiz!</p>
+      <div class="row"><button onclick="startVocab()">🧠 Start the quiz</button></div>
+    </div>
+    <div id="vlist" class="grid"></div>
+  </section>
+
+  <!-- VOCABULARY: quiz -->
+  <section id="s-vocab" class="hidden">
+    <div class="card center">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <button class="ghost small" onclick="stopAudio();showVocabStudy()">← Stop</button>
+        <b>🧠 Word Meanings Quiz</b>
+        <span class="pill" id="vcount"></span>
+      </div>
+      <div class="progress"><div id="vbar"></div></div>
+      <div class="muted" id="vprompt"></div>
+      <div id="vq" style="font-size:1.5rem;font-weight:bold;margin:10px 0 6px"></div>
+      <div class="row"><button class="ghost small" onclick="vReplay()">🔊 Hear it again</button></div>
+      <div id="vopts" style="display:grid;gap:10px;margin-top:14px"></div>
+      <div class="feedback" id="vfb"></div>
+      <div class="row hidden" id="vnext"><button onclick="vNext()" id="vnextBtn">Next →</button></div>
     </div>
   </section>
 
@@ -578,15 +610,46 @@ const VOPE_WORDS = [
 ["thoughts","Ideas in your mind.","Write your thoughts in your journal."],
 ["endless","Having no end; going on and on.","The ocean looked endless."]
 ];
+// School week: 20 spelling words (VCe syllable pattern) + 6 vocabulary words.
+// Vocabulary rows end with true; their definitions are the teacher's own wording.
+const SCHOOL_VCE_WORDS = [
+["educate","To teach someone.","Teachers educate students every day."],
+["fascinate","To interest someone very much.","Sharks fascinate my little brother."],
+["imitate","To copy the way someone acts or talks.","The parrot can imitate my voice."],
+["advertise","To tell people about something so they will buy it or come to it.","The store will advertise its big sale on the radio."],
+["supervise","To watch over people to make sure things are done right.","A lifeguard will supervise the swimmers."],
+["criticize","To point out what is wrong with someone or something.","It is not kind to criticize other people's drawings."],
+["impose","To force a rule or a job on someone.","The coach will impose a new rule: no phones at practice."],
+["corrode","To slowly wear away, like metal that rusts.","Salt water can corrode a bike chain."],
+["cyclone","A huge storm with strong winds that spin in a circle.","The cyclone brought heavy rain to the islands."],
+["envelope","A paper cover for a letter.","She sealed the letter in an envelope."],
+["contribute","To give something to help.","Everyone can contribute a can of food for the food drive."],
+["ridicule","To make fun of someone in a mean way.","We should never ridicule someone for making a mistake."],
+["distribute","To hand things out to many people.","The teacher will distribute the test papers."],
+["module","One part or section of something bigger, like a lesson.","We finished the first module of our science book."],
+["episode","One part of a TV show or a story.","I watched a new episode of my favorite show."],
+["cooperate","To work together.","We must cooperate to finish the puzzle."],
+["participate","To take part in something.","Everyone will participate in the spelling bee."],
+["survive","To stay alive through something hard.","Cactus plants can survive without much water."],
+["acquire","To get something.","She hopes to acquire new books for her collection."],
+["recognize","To know someone or something because you have seen it before.","I didn't recognize my teacher in her costume!"],
+["identical","Appearing to be exactly the same.","The twins wore identical dresses.",true],
+["radiation","Energy that comes from the sun or other sources.","Sunscreen protects your skin from the sun's radiation.",true],
+["duplicate","An exact copy of something.","Mom made a duplicate of the house key.",true],
+["comparison","Looking at how two or more things are similar or different.","We made a comparison of frogs and toads.",true],
+["DNA","The special material inside living things that determines how they grow and look.","Your DNA is the reason you have your mother's eyes.",true],
+["chromosomes","Tiny parts inside a cell that carry DNA.","Chromosomes are too small to see without a microscope.",true]
+];
 const BUILTIN=[
   {id:'vope',name:'VOPE Butterflies 2026',rows:VOPE_WORDS,audio:'audio/vope/'},
+  {id:'school-vce',name:'School: VCe spelling + vocabulary',rows:SCHOOL_VCE_WORDS,audio:'audio/school-vce/'},
   {id:'main',name:'Spelling Bee list',rows:MAIN_WORDS,audio:'audio/'}];
 let WORDS=[], NLISTS=0;
 function allSets(){return [...BUILTIN,...(S.custom||[]).map(c=>({id:c.id,name:c.name,rows:c.rows,audio:null,custom:true}))]}
 const curSet=()=>allSets().find(s=>s.id===S.set)||BUILTIN[1];
 function useSet(id){
   S.set=id; const set=curSet(); S.set=set.id;
-  WORDS=set.rows.map((r,i)=>({w:r[0],def:r[1]||'',sen:r[2]||'',i,list:Math.floor(i/20)+1,a:set.audio}));
+  WORDS=set.rows.map((r,i)=>({w:r[0],def:r[1]||'',sen:r[2]||'',v:!!r[3],i,list:Math.floor(i/20)+1,a:set.audio}));
   NLISTS=Math.ceil(WORDS.length/20);
 }
 
@@ -678,6 +741,7 @@ function renderTop(){$('starPill').textContent='⭐ '+S.stars}
 function renderHome(){
   renderTop();
   $('hello').textContent='Hi, '+S.name+'! 🐝'; renderSetChip();
+  $('vocabBtn').classList.toggle('hidden',!WORDS.some(x=>x.v));
   let m=0,l=0,t=0; WORDS.forEach(x=>{const lv=level(x.w); if(lv===4)m++; else if(lv>0)l++; if(isTricky(x.w))t++;});
   $('stMastered').textContent=m+'/'+WORDS.length; $('stLearning').textContent=l; $('stTricky').textContent=t; $('stBest').textContent=S.beeBest;
   $('homeBar').style.width=(100*m/WORDS.length)+'%';
@@ -833,7 +897,7 @@ function renderDef(x,mw,loading){
   if(has)h+='<b>📖 Merriam-Webster:</b>'+mw.map(e=>'<div style="margin-top:4px"><i>'+esc(e.fl)+'</i> — '+blankIn(e.defs.join('; '),x.w)+'</div>').join('')+
     '<div class="muted" style="font-size:.8rem;margin-top:4px">From Merriam-Webster\'s Elementary Dictionary</div>';
   else if(loading)h+='<div class="muted">Looking it up in Merriam-Webster…</div>';
-  if(x.def)h+='<div'+(has||loading?' style="margin-top:8px"':'')+'><b>'+(has||loading?'🐝 In simple words: ':'📖 Definition: ')+'</b>'+esc(x.def)+'</div>';
+  if(x.def)h+='<div'+(has||loading?' style="margin-top:8px"':'')+'><b>'+(x.v?'📝 Class definition: ':has||loading?'🐝 In simple words: ':'📖 Definition: ')+'</b>'+esc(x.def)+'</div>';
   else if(!has&&!loading)h+='<div class="muted">No definition found for this word.</div>';
   $('hintBox').innerHTML=h+'</div>';
 }
@@ -1027,6 +1091,74 @@ function resetAll(){
   if(!confirm('Erase all spelling progress and stars?'))return;
   S.words={};S.stars=0;S.beeBest=0;save();showList();
 }
+
+// ---------- vocabulary: learn what words mean (teacher's definitions) ----------
+const vocabWords=()=>WORDS.filter(x=>x.v);
+function showVocabStudy(){
+  $('vlist').innerHTML=vocabWords().map(x=>'<div class="card" style="margin:0">'+
+    '<div style="font-size:1.7rem;font-weight:bold">'+esc(x.w)+'</div>'+
+    '<div style="margin:6px 0;font-size:1.1rem">'+esc(x.def)+'</div>'+
+    '<div class="muted">“'+esc(x.sen)+'”</div>'+
+    '<div class="row" style="justify-content:flex-start;margin-top:10px">'+
+    '<button class="small blue" onclick="playSeq([clipOf(WORDS['+x.i+'],\'w\')])">🔊 Word</button>'+
+    '<button class="small ghost" onclick="playSeq([clipOf(WORDS['+x.i+'],\'w\'),clipOf(WORDS['+x.i+'],\'d\')])">🔊 Meaning</button></div></div>').join('');
+  go('vstudy');
+}
+// each word asked two ways: hear the meaning → pick the word, and see the word → pick the meaning
+let vq=[],vi=0,vFirst=0,vRight=0,vMiss=[],vCur=null;
+function startVocab(){
+  const vw=vocabWords(); if(!vw.length)return;
+  vq=shuffle([...vw.map(x=>({x,t:'def'})),...vw.map(x=>({x,t:'word'}))]);
+  vi=0;vRight=0;vMiss=[];vFirst=vq.length; mode='vocab';
+  go('vocab'); vShow();
+}
+function vShow(){
+  vCur=vq[vi]; const {x,t}=vCur;
+  $('vcount').textContent=(vi+1)+' / '+vq.length; $('vbar').style.width=(100*vi/vq.length)+'%';
+  $('vfb').innerHTML=''; $('vnext').classList.add('hidden');
+  const pool=vocabWords().filter(y=>y!==x), extra=WORDS.filter(y=>!y.v&&y.def);
+  const others=shuffle(pool.slice()).concat(shuffle(extra.slice())).slice(0,3);
+  const opts=shuffle([x,...others]);
+  if(t==='def'){
+    $('vprompt').textContent='Which word means…';
+    $('vq').textContent='“'+x.def+'”';
+    $('vopts').innerHTML=opts.map(o=>'<button class="ghost" data-i="'+o.i+'" style="font-size:1.3rem">'+esc(o.w)+'</button>').join('');
+  }else{
+    $('vprompt').textContent='What does this word mean?';
+    $('vq').innerHTML='<span style="font-size:2.2rem">'+esc(x.w)+'</span>';
+    $('vopts').innerHTML=opts.map(o=>'<button class="ghost" data-i="'+o.i+'" style="text-align:left;font-weight:normal">'+esc(o.def)+'</button>').join('');
+  }
+  $('vopts').querySelectorAll('button').forEach(b=>b.onclick=()=>vPick(+b.dataset.i,b));
+  setTimeout(vReplay,200);
+}
+function vReplay(){const {x,t}=vCur; playSeq(t==='def'?[clipOf(x,'d')]:[clipOf(x,'w')])}
+function vPick(i,btn){
+  const {x}=vCur, ok=i===x.i, first=!vCur.retry;
+  $('vopts').querySelectorAll('button').forEach(b=>{b.disabled=true;
+    if(+b.dataset.i===x.i)b.className='green'; });
+  S.vocab=S.vocab||{}; const r=S.vocab[x.w]||(S.vocab[x.w]={right:0,wrong:0});
+  if(ok){ding(); r.right++; if(first)vRight++; S.stars++;
+    $('vfb').innerHTML='<span class="ok pop">Yes! 🌟</span>';}
+  else{bonk(); r.wrong++; btn.className='red'; if(!vMiss.includes(x.w))vMiss.push(x.w);
+    $('vfb').innerHTML='<span class="no">Not quite!</span><div style="font-size:1.05rem;margin-top:6px"><b>'+esc(x.w)+'</b> means: '+esc(x.def)+'</div>';
+    playSeq([clipOf(x,'w'),clipOf(x,'d')]);
+    if(first)vq.push({...vCur,retry:true});            // ask it again at the end
+  }
+  save(); renderTop();
+  $('vnextBtn').textContent=vi===vq.length-1?'Finish 🏁':'Next →'; $('vnext').classList.remove('hidden');
+}
+function vNext(){stopAudio(); vi++; if(vi>=vq.length)return finishVocab(); vShow()}
+function finishVocab(){
+  const pct=vRight/vFirst;
+  if(pct===1){S.stars+=5;save();renderTop();}
+  $('doneStars').textContent=pct===1?'⭐⭐⭐':pct>=.7?'⭐⭐':'⭐';
+  $('doneTitle').textContent=pct===1?'You know every meaning, '+S.name+'! +5 bonus stars!':pct>=.7?'Great job, '+S.name+'!':'Good practice, '+S.name+'!';
+  $('doneMsg').textContent=vRight+' out of '+vFirst+' right on the first try.';
+  $('doneMissed').innerHTML=vMiss.length?'<div class="hint"><b>Meanings to practice again:</b>'+
+    vMiss.map(w=>{const x=WORDS[wordIdx(w)];return '<div style="margin-top:6px"><b>'+esc(x.w)+'</b> — '+esc(x.def)+'</div>'}).join('')+'</div>':'';
+  go('done');
+}
+function playAgain(){mode==='vocab'?startVocab():startMode()}
 
 // ---------- word lists: built-in (with Ava recordings) + ones added on this device ----------
 function renderSetChip(){$('setChip').textContent='📚 '+curSet().name+' · '+WORDS.length+' words · change ▸'}
