@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="theme-color" content="#f5b301">
-<title>Spelling Bee Practice</title>
+<title>Study Bee</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -82,7 +82,7 @@ select,input[type=range]{font:inherit;padding:6px;flex:1;min-width:160px}
 <div class="wrap">
   <header>
     <span style="font-size:2rem" class="bee">🐝</span>
-    <h1 id="title">Spelling Bee Practice</h1>
+    <h1 id="title">Study Bee</h1>
     <span class="pill" id="starPill">⭐ 0</span>
   </header>
 
@@ -110,6 +110,11 @@ select,input[type=range]{font:inherit;padding:6px;flex:1;min-width:160px}
         <div class="stat"><b id="stBest">0</b>bee record</div>
       </div>
     </div>
+    <div class="card" id="weekCard" style="background:#eef6ff;border-color:#cfe2ff">
+      <b id="weekTitle">📅 This week</b>
+      <ul id="weekItems" style="margin:8px 0 0;padding-left:20px;line-height:1.7"></ul>
+    </div>
+    <h3 style="margin:18px 4px 8px">✏️ Spelling &amp; Vocabulary</h3>
     <div class="grid">
       <button class="mode" onclick="pickLists('practice')"><span class="big">✏️</span><span class="t">Spell It</span><span class="d">Hear a word, spell it out loud or type it. Tricky words come back more often.</span></button>
       <button class="mode blue" onclick="pickLists('learn')"><span class="big">👀</span><span class="t">Look, Say, Cover, Write</span><span class="d">See the word, hear each letter, then spell it from memory.</span></button>
@@ -117,6 +122,8 @@ select,input[type=range]{font:inherit;padding:6px;flex:1;min-width:160px}
       <button class="mode hidden" id="vocabBtn" onclick="showVocabStudy()" style="background:#8e6bd6;color:#fff;box-shadow:0 4px 0 #5f43a0"><span class="big">🧠</span><span class="t">Word Meanings</span><span class="d">Learn what the vocabulary words mean, then take a quick quiz.</span></button>
       <button class="mode ghost" onclick="showList()"><span class="big">📚</span><span class="t">My Word List</span><span class="d">All the words, how well you know each one, and settings.</span></button>
     </div>
+    <h3 style="margin:18px 4px 8px">📚 Other subjects</h3>
+    <div class="grid" id="topicTiles"></div>
     <div class="row" style="margin-top:14px">
       <button class="ghost small" id="installBtn2" onclick="doInstall()" style="display:none">📲 Install app</button>
       <button class="ghost small" onclick="showSetup()">🔧 Setup &amp; test (mic, sound, install)</button>
@@ -243,6 +250,36 @@ select,input[type=range]{font:inherit;padding:6px;flex:1;min-width:160px}
         <button class="ghost" onclick="go('home')">🏠 Home</button>
         <button onclick="playAgain()">Play again 🐝</button>
       </div>
+    </div>
+  </section>
+
+  <!-- TOPIC (science, grammar, …): study cards -->
+  <section id="s-topic" class="hidden">
+    <div class="card">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <button class="ghost small" onclick="stopAudio();go('home')">← Home</button>
+        <b id="topicTitle"></b><span></span>
+      </div>
+      <p class="muted center" id="topicIntro"></p>
+      <div class="row"><button onclick="startTopicQuiz()">🧠 Start the quiz</button></div>
+    </div>
+    <div id="topicCards" class="grid"></div>
+  </section>
+
+  <!-- TOPIC: quiz -->
+  <section id="s-tquiz" class="hidden">
+    <div class="card center">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <button class="ghost small" onclick="stopAudio();showTopic(curTopic.id)">← Stop</button>
+        <b id="tqTitle"></b>
+        <span class="pill" id="tqCount"></span>
+      </div>
+      <div class="progress"><div id="tqBar"></div></div>
+      <div id="tqQ" style="font-size:1.4rem;font-weight:bold;margin:12px 0 6px"></div>
+      <div class="row"><button class="ghost small" onclick="tqReplay()">🔊 Hear it again</button></div>
+      <div id="tqOpts" style="display:grid;gap:10px;margin-top:14px"></div>
+      <div class="feedback" id="tqFb"></div>
+      <div class="row hidden" id="tqNext"><button onclick="tqAdvance()" id="tqNextBtn">Next →</button></div>
     </div>
   </section>
 
@@ -745,6 +782,7 @@ function renderHome(){
   renderTop();
   $('hello').textContent='Hi, '+S.name+'! 🐝'; renderSetChip();
   $('vocabBtn').classList.toggle('hidden',!WORDS.some(x=>x.v));
+  renderTopicTiles();
   let m=0,l=0,t=0; WORDS.forEach(x=>{const lv=level(x.w); if(lv===4)m++; else if(lv>0)l++; if(isTricky(x.w))t++;});
   $('stMastered').textContent=m+'/'+WORDS.length; $('stLearning').textContent=l; $('stTricky').textContent=t; $('stBest').textContent=S.beeBest;
   $('homeBar').style.width=(100*m/WORDS.length)+'%';
@@ -1095,6 +1133,150 @@ function resetAll(){
   S.words={};S.stars=0;S.beeBest=0;save();showList();
 }
 
+// ---------- this week (from the class forecast; no teacher/school details — the app is public) ----------
+const WEEK={title:'📅 This week: Oct 19–23',items:[
+  '📝 <b>Spelling & Dictation Test</b> — Tuesday, 27 October',
+  '🏖️ Mid-term break Oct 23–26 · school reopens Tuesday 27th',
+  '✏️ Review spelling and learn the vocabulary meanings every night',
+  '✖️ Practise the 8× and 9× tables',
+  '📖 Read at home every night']};
+
+// ---------- topics: study cards + quiz. Plain JSON so the audio generator can read it. ----------
+// Clips: audio/topics/<id>/c00.mp3 (card), q00.mp3 (question), e00.mp3 (explanation)
+const TOPICS = [
+{"id":"science-respiratory","subject":"Science","icon":"🫁","title":"The Respiratory System",
+ "intro":"Your respiratory system is how you breathe. Learn each part, then take the quiz!",
+ "cards":[
+  ["Respiratory system","The body parts that help you breathe. They bring oxygen into your body and take carbon dioxide out."],
+  ["Oxygen","A gas in the air that your body needs to stay alive. You breathe it in."],
+  ["Carbon dioxide","A waste gas that your body makes. You breathe it out."],
+  ["Nose and mouth","Where air enters your body. Tiny hairs and sticky mucus in your nose trap dust and germs."],
+  ["Trachea","Also called the windpipe. The tube that carries air from your throat down toward your lungs."],
+  ["Bronchi","Two tubes that branch off from the trachea. One goes into each lung."],
+  ["Lungs","Two spongy organs in your chest. They fill up with air when you breathe in."],
+  ["Alveoli","Millions of tiny air sacs inside your lungs. Here, oxygen goes into your blood and carbon dioxide comes out."],
+  ["Diaphragm","A strong, dome-shaped muscle under your lungs. It moves down to pull air in, and up to push air out."],
+  ["Inhale and exhale","Inhale means to breathe in. Exhale means to breathe out."],
+  ["The path of air","Nose or mouth, then trachea, then bronchi, then lungs, then the alveoli, where oxygen goes into the blood."],
+  ["Healthy lungs","Exercise, stay away from smoke, wash your hands to stop germs, and breathe clean air."]],
+ "quiz":[
+  ["What is the main job of the respiratory system?","To bring oxygen in and take carbon dioxide out",["To pump blood around the body","To break down food","To help you see"],"The respiratory system brings oxygen into your body and takes carbon dioxide out."],
+  ["Which gas does your body need, that you breathe in?","Oxygen",["Carbon dioxide","Smoke","Helium"],"You breathe in oxygen. Your body needs it to stay alive."],
+  ["Which gas do you breathe out?","Carbon dioxide",["Oxygen","Helium","Steam"],"You breathe out carbon dioxide, a waste gas your body makes."],
+  ["What is another name for the trachea?","The windpipe",["The backbone","The eardrum","The food pipe"],"The trachea is also called the windpipe. It carries air toward your lungs."],
+  ["Which muscle under your lungs helps you breathe?","The diaphragm",["The heart","The biceps","The stomach"],"The diaphragm is a dome-shaped muscle under your lungs that helps you breathe."],
+  ["What are the tiny air sacs inside your lungs called?","Alveoli",["Bronchi","Trachea","Nostrils"],"The tiny air sacs are called alveoli. Oxygen passes into your blood there."],
+  ["What do the bronchi do?","Carry air from the trachea into each lung",["Pump blood to the brain","Trap dust in your nose","Turn food into energy"],"The two bronchi carry air from the trachea into each lung."],
+  ["What does inhale mean?","To breathe in",["To breathe out","To swallow","To sneeze"],"Inhale means to breathe in."],
+  ["What does exhale mean?","To breathe out",["To breathe in","To yawn","To hiccup"],"Exhale means to breathe out."],
+  ["What traps dust and germs in your nose?","Tiny hairs and mucus",["The diaphragm","The alveoli","The bronchi"],"Tiny hairs and sticky mucus in your nose trap dust and germs."],
+  ["Which shows the correct path of air into your body?","Nose, trachea, bronchi, lungs",["Lungs, nose, bronchi, trachea","Trachea, nose, lungs, bronchi","Bronchi, lungs, nose, trachea"],"Air goes in through your nose, down the trachea, through the bronchi, and into your lungs."],
+  ["When you breathe in, what does the diaphragm do?","It moves down so the lungs can fill with air",["It moves up and squeezes the lungs","It stops moving","It fills with blood"],"When you breathe in, the diaphragm moves down, making room for your lungs to fill with air."],
+  ["Where does oxygen go after it reaches the alveoli?","Into the blood",["Into the stomach","Out through the ears","Into the bones"],"From the alveoli, oxygen goes into your blood, which carries it all around your body."],
+  ["Which is a good way to keep your lungs healthy?","Exercise and stay away from smoke",["Breathe smoky air","Never exercise","Hold your breath all day"],"Exercise and staying away from smoke help keep your lungs healthy."],
+  ["How many lungs do you have?","Two",["One","Four","Ten"],"You have two lungs, one on each side of your chest."]]},
+{"id":"grammar-collective","subject":"Grammar","icon":"📝","title":"Collective Nouns",
+ "intro":"A collective noun names a whole group as one. Learn the groups, then take the quiz!",
+ "cards":[
+  ["Collective noun","A word that names a group of people, animals, or things as one unit. Example: a team of players."],
+  ["team","A group of players."],
+  ["class","A group of students."],
+  ["crowd","A large group of people."],
+  ["band","A group of musicians."],
+  ["choir","A group of singers."],
+  ["audience","A group of people watching or listening to a show."],
+  ["flock","A group of birds or sheep."],
+  ["herd","A group of cows, goats, or elephants."],
+  ["school","A group of fish."],
+  ["swarm","A group of bees or other insects."],
+  ["pack","A group of wolves or dogs."],
+  ["pride","A group of lions."],
+  ["pod","A group of dolphins or whales."],
+  ["litter","A group of baby animals born at the same time, like puppies or kittens."],
+  ["bunch","A group of bananas, grapes, or flowers."],
+  ["bouquet","A group of flowers tied together."],
+  ["fleet","A group of ships or boats."],
+  ["deck","A set of playing cards."]],
+ "quiz":[
+  ["What is a collective noun?","A word that names a group as one unit",["An action word","A word that describes something","A word that names just one person"],"A collective noun names a group, like a team, a flock, or a class."],
+  ["A ___ of fish swam under the boat.","school",["herd","flock","pack"],"A group of fish is called a school."],
+  ["A ___ of bees buzzed around the hive.","swarm",["pride","deck","class"],"A group of bees is called a swarm."],
+  ["A ___ of lions rested in the shade.","pride",["school","bunch","fleet"],"A group of lions is called a pride."],
+  ["The farmer has a ___ of cows.","herd",["swarm","bouquet","choir"],"A group of cows is called a herd."],
+  ["A ___ of birds flew over the beach.","flock",["pod","pack","deck"],"A group of birds is called a flock."],
+  ["Mom bought a ___ of bananas.","bunch",["herd","crowd","pride"],"Bananas grow and are sold in a bunch."],
+  ["A ___ of dolphins jumped beside the boat.","pod",["swarm","class","bunch"],"A group of dolphins is called a pod."],
+  ["Which word is the collective noun? “The choir sang at church on Sunday.”","choir",["sang","church","Sunday"],"Choir is the collective noun. It names a group of singers."],
+  ["Which word is the collective noun? “Our class went on a field trip.”","class",["went","field","trip"],"Class is the collective noun. It names a group of students."],
+  ["Which of these is a collective noun for people?","audience",["puppy","table","quickly"],"Audience names a group of people watching or listening."],
+  ["A ___ of ships sailed into the harbour.","fleet",["flock","litter","herd"],"A group of ships is called a fleet."],
+  ["A ___ of wolves howled at the moon.","pack",["bunch","school","fleet"],"A group of wolves is called a pack."],
+  ["She gave her grandma a ___ of flowers.","bouquet",["herd","swarm","pod"],"Flowers tied together are called a bouquet."],
+  ["A ___ of people watched the Junkanoo parade.","crowd",["flock","litter","deck"],"A large group of people is called a crowd."],
+  ["Our dog had a ___ of six puppies.","litter",["fleet","choir","deck"],"Baby animals born at the same time are called a litter."]]}
+];
+// END TOPICS
+
+const tclip=(t,k,i,text)=>({url:'audio/topics/'+t.id+'/'+k+pad(i)+'.mp3',text});
+const speakable=q=>q.replace(/_{2,}/g,'blank');
+function renderTopicTiles(){
+  S.topics=S.topics||{};
+  $('topicTiles').innerHTML=TOPICS.map(t=>{const st=S.topics[t.id];
+    return '<button class="mode ghost" onclick="showTopic(\''+t.id+'\')"><span class="big">'+t.icon+'</span>'+
+      '<span class="t">'+esc(t.subject)+': '+esc(t.title)+'</span><span class="d">'+
+      (st?'Best quiz score: '+st.best+' / '+st.of:t.cards.length+' study cards · '+t.quiz.length+'-question quiz')+'</span></button>'}).join('')+
+    '<a class="mode ghost" href="https://portlockers.github.io/grade4-math/" style="text-decoration:none;color:inherit;background:#fff;border:2px solid var(--line);border-radius:16px;box-shadow:0 3px 0 var(--line);display:flex;flex-direction:column;gap:4px;padding:18px">'+
+      '<span class="big">✖️</span><span class="t" style="font-weight:bold">Math: Times Tables</span><span class="d" style="font-size:.9rem">Opens the math app — practise the 8× and 9× tables.</span></a>';
+  $('weekTitle').innerHTML=WEEK.title; $('weekItems').innerHTML=WEEK.items.map(i=>'<li>'+i+'</li>').join('');
+}
+let curTopic=null;
+function showTopic(id){
+  stopAudio(); curTopic=TOPICS.find(t=>t.id===id);
+  $('topicTitle').textContent=curTopic.icon+' '+curTopic.title; $('topicIntro').textContent=curTopic.intro;
+  $('topicCards').innerHTML=curTopic.cards.map((c,i)=>'<div class="card" style="margin:0">'+
+    '<div style="font-size:1.4rem;font-weight:bold">'+esc(c[0])+'</div><div style="margin:6px 0 10px;font-size:1.05rem">'+esc(c[1])+'</div>'+
+    '<button class="small blue" onclick="playSeq([tclip(curTopic,\'c\','+i+',curTopic.cards['+i+'].join(\'. \'))])">🔊 Listen</button></div>').join('');
+  go('topic');
+}
+let tq=[],tqi=0,tqRight=0,tqFirst=0,tqMiss=[];
+function startTopicQuiz(){
+  const t=curTopic; tq=shuffle(t.quiz.map((q,i)=>({i,q:q[0],ans:q[1],opts:shuffle([q[1],...q[2]]),why:q[3]})));
+  tqi=0;tqRight=0;tqMiss=[];tqFirst=tq.length; mode='topic';
+  $('tqTitle').textContent=t.icon+' '+t.title; go('tquiz'); tqShow();
+}
+function tqShow(){
+  const it=tq[tqi];
+  $('tqCount').textContent=(tqi+1)+' / '+tq.length; $('tqBar').style.width=(100*tqi/tq.length)+'%';
+  $('tqQ').textContent=it.q; $('tqFb').innerHTML=''; $('tqNext').classList.add('hidden');
+  $('tqOpts').innerHTML=it.opts.map((o,k)=>'<button class="ghost" data-k="'+k+'" style="font-size:1.15rem">'+esc(o)+'</button>').join('');
+  $('tqOpts').querySelectorAll('button').forEach(b=>b.onclick=()=>tqPick(+b.dataset.k,b));
+  setTimeout(()=>{if(tq[tqi]===it&&!$('s-tquiz').classList.contains('hidden'))tqReplay()},200);
+}
+function tqReplay(){const it=tq[tqi]; if(it)playSeq([tclip(curTopic,'q',it.i,speakable(it.q))])}
+function tqPick(k,btn){
+  const it=tq[tqi], ok=it.opts[k]===it.ans;
+  $('tqOpts').querySelectorAll('button').forEach(b=>{b.disabled=true; if(it.opts[+b.dataset.k]===it.ans)b.className='green'});
+  if(ok){ding(); if(!it.retry)tqRight++; S.stars++; $('tqFb').innerHTML='<span class="ok pop">Correct! 🌟</span>';}
+  else{bonk(); btn.className='red'; if(!tqMiss.includes(it.i))tqMiss.push(it.i); $('tqFb').innerHTML='<span class="no">Not quite!</span>';
+    if(!it.retry)tq.push({...it,opts:shuffle(it.opts.slice()),retry:true});}
+  $('tqFb').innerHTML+='<div style="font-size:1.05rem;margin-top:6px;font-weight:normal">'+esc(it.why)+'</div>';
+  playSeq([tclip(curTopic,'e',it.i,it.why)]);
+  save(); renderTop();
+  $('tqNextBtn').textContent=tqi===tq.length-1?'Finish 🏁':'Next →'; $('tqNext').classList.remove('hidden');
+}
+function tqAdvance(){stopAudio(); tqi++; if(tqi>=tq.length)return finishTopicQuiz(); tqShow()}
+function finishTopicQuiz(){
+  const t=curTopic, pct=tqRight/tqFirst; S.topics=S.topics||{};
+  const st=S.topics[t.id]||{best:0,of:tqFirst,plays:0}; st.plays++; st.of=tqFirst; st.best=Math.max(st.best,tqRight); S.topics[t.id]=st;
+  if(pct===1)S.stars+=5; save(); renderTop();
+  $('doneStars').textContent=pct===1?'⭐⭐⭐':pct>=.7?'⭐⭐':'⭐';
+  $('doneTitle').textContent=pct===1?'Perfect, '+S.name+'! +5 bonus stars!':pct>=.7?'Great job, '+S.name+'!':'Good practice, '+S.name+'!';
+  $('doneMsg').textContent=tqRight+' out of '+tqFirst+' right on the first try.';
+  $('doneMissed').innerHTML=tqMiss.length?'<div class="hint"><b>Review these:</b>'+
+    tqMiss.map(i=>'<div style="margin-top:6px">'+esc(t.quiz[i][3])+'</div>').join('')+'</div>':'';
+  go('done');
+}
+
 // ---------- vocabulary: learn what words mean (teacher's definitions) ----------
 const vocabWords=()=>WORDS.filter(x=>x.v);
 function showVocabStudy(){
@@ -1161,7 +1343,7 @@ function finishVocab(){
     vMiss.map(w=>{const x=WORDS[wordIdx(w)];return '<div style="margin-top:6px"><b>'+esc(x.w)+'</b> — '+esc(x.def)+'</div>'}).join('')+'</div>':'';
   go('done');
 }
-function playAgain(){mode==='vocab'?startVocab():startMode()}
+function playAgain(){mode==='vocab'?startVocab():mode==='topic'?startTopicQuiz():startMode()}
 
 // ---------- word lists: built-in (with Ava recordings) + ones added on this device ----------
 function renderSetChip(){$('setChip').textContent='📚 '+curSet().name+' · '+WORDS.length+' words · change ▸'}

@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Spelling Bee Practice",
-  "short_name": "Spelling Bee",
+  "name": "Study Bee",
+  "short_name": "Study Bee",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
