@@ -280,6 +280,7 @@ select,input[type=range]{font:inherit;padding:6px;flex:1;min-width:160px}
       <div id="tqOpts" style="display:grid;gap:10px;margin-top:14px"></div>
       <div class="feedback" id="tqFb"></div>
       <div class="row hidden" id="tqNext"><button onclick="tqAdvance()" id="tqNextBtn">Next →</button></div>
+      <div class="muted" id="tqCredit" style="font-size:.75rem;margin-top:14px"></div>
     </div>
   </section>
 
@@ -1275,28 +1276,28 @@ const TOPICS = [
   ["Which sentence has correct capitals and punctuation?","On Saturday, we went to the beach.",["on saturday we went to the beach","On saturday, we went to the beach","on Saturday we went to the beach."],"Start with a capital letter, capitalize days of the week, and end with a period."],
   ["Which word correctly completes the sentence? “The children ate ___ lunch.”","their",["there","they're","thier"],"Their shows that something belongs to them: their lunch."]]},
 {"id":"scripture-proverbs-3","subject":"Scripture","icon":"📖","title":"Proverbs 3:5-6",
- "intro":"Our class scripture. Read it, listen to it, learn what it means, then take the quiz! (King James Version)",
+ "intro":"Our class scripture, from the New International Version (NIV). Read it, listen to it, learn what it means, then take the quiz!",
+ "credit":"Scripture quotations taken from The Holy Bible, New International Version® NIV®. Copyright © 1973, 1978, 1984, 2011 by Biblica, Inc.™ Used by permission. All rights reserved worldwide.",
  "cards":[
-  ["Proverbs 3:5-6","Trust in the LORD with all thine heart; and lean not unto thine own understanding. In all thy ways acknowledge him, and he shall direct thy paths."],
-  ["Verse 5","Trust in the LORD with all thine heart; and lean not unto thine own understanding."],
-  ["Verse 6","In all thy ways acknowledge him, and he shall direct thy paths."],
-  ["What it means","Trust God completely, not just your own ideas. Remember God in everything you do, and He will guide you on the right path."],
-  ["Thine and thy","Old words that mean your."],
-  ["Lean not unto thine own understanding","Don't depend only on what you think you know."],
-  ["Acknowledge him","Remember God and put Him first."],
-  ["Direct thy paths","Guide your way and show you where to go."],
+  ["Proverbs 3:5-6","Trust in the LORD with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight."],
+  ["Verse 5","Trust in the LORD with all your heart and lean not on your own understanding;"],
+  ["Verse 6","in all your ways submit to him, and he will make your paths straight."],
+  ["What it means","Trust God completely, not just your own ideas. Put God first in everything you do, and He will guide you on the right path."],
+  ["Lean not on your own understanding","Don't depend only on what you think you know."],
+  ["Submit to him","Put God first and follow His way."],
+  ["He will make your paths straight","God will guide you and show you the right way to go."],
   ["The Book of Proverbs","A book in the Old Testament full of wise sayings. King Solomon wrote many of them."]],
  "quiz":[
-  ["“Trust in the LORD with all thine ___.”","heart",["hands","house","head"],"Trust in the LORD with all thine heart."],
-  ["“and lean not unto thine own ___.”","understanding",["strength","family","friends"],"and lean not unto thine own understanding."],
-  ["“In all thy ways ___ him.”","acknowledge",["forget","leave","question"],"In all thy ways acknowledge him."],
-  ["“and he shall direct thy ___.”","paths",["words","songs","days"],"and he shall direct thy paths."],
+  ["“Trust in the LORD with all your ___”","heart",["hands","house","head"],"Trust in the LORD with all your heart."],
+  ["“and lean not on your own ___”","understanding",["strength","family","friends"],"and lean not on your own understanding."],
+  ["“in all your ways ___ to him”","submit",["run","sing","talk"],"in all your ways submit to him."],
+  ["“and he will make your paths ___.”","straight",["long","dark","crooked"],"and he will make your paths straight."],
   ["Where is our class scripture found?","Proverbs 3:5-6",["Psalm 23:1","John 3:16","Genesis 1:1"],"Our class scripture is Proverbs chapter 3, verses 5 and 6."],
-  ["What does the old word thine mean?","your",["their","our","his"],"Thine and thy are old words that mean your."],
+  ["What does it mean to “submit to him”?","Put God first and follow His way",["Send God a letter","Give up and stop trying","Hide from God"],"To submit to God means to put Him first and follow His way."],
   ["What does it mean to trust in the LORD with all your heart?","To trust God completely",["To trust only yourself","To trust God only on Sundays","To never pray"],"Trusting with all your heart means trusting God completely."],
-  ["What does “lean not unto thine own understanding” mean?","Don't depend only on what you think",["Lean against a wall","Never learn anything new","Always do what you want"],"It means don't depend only on what you think you know."],
-  ["What does God promise in verse 6?","He will direct your paths",["He will make you rich","He will do your homework","You will never have to try"],"Verse 6 says: he shall direct thy paths. God will guide your way."],
-  ["What comes right after “Trust in the LORD with all thine heart”?","and lean not unto thine own understanding",["and he shall direct thy paths","In all thy ways acknowledge him","for God so loved the world"],"Trust in the LORD with all thine heart; and lean not unto thine own understanding."],
+  ["What does “lean not on your own understanding” mean?","Don't depend only on what you think",["Lean against a wall","Never learn anything new","Always do what you want"],"It means don't depend only on what you think you know."],
+  ["What does God promise in verse 6?","He will make your paths straight",["He will make you rich","He will do your homework","You will never have to try"],"Verse 6 says he will make your paths straight. God will guide your way."],
+  ["What comes right after “Trust in the LORD with all your heart”?","and lean not on your own understanding",["and he will make your paths straight","in all your ways submit to him","for God so loved the world"],"Trust in the LORD with all your heart and lean not on your own understanding."],
   ["Who wrote many of the proverbs?","King Solomon",["Noah","Jonah","Pharaoh"],"King Solomon wrote many of the wise sayings in Proverbs."],
   ["Which part of the Bible is the Book of Proverbs in?","The Old Testament",["The New Testament","The Gospels","The Book of Revelation"],"Proverbs is in the Old Testament."]]}
 ];
@@ -1320,14 +1321,15 @@ function showTopic(id){
   $('topicTitle').textContent=curTopic.icon+' '+curTopic.title; $('topicIntro').textContent=curTopic.intro;
   $('topicCards').innerHTML=curTopic.cards.map((c,i)=>'<div class="card" style="margin:0">'+
     '<div style="font-size:1.4rem;font-weight:bold">'+esc(c[0])+'</div><div style="margin:6px 0 10px;font-size:1.05rem">'+esc(c[1])+'</div>'+
-    '<button class="small blue" onclick="playSeq([tclip(curTopic,\'c\','+i+',curTopic.cards['+i+'].join(\'. \'))])">🔊 Listen</button></div>').join('');
+    '<button class="small blue" onclick="playSeq([tclip(curTopic,\'c\','+i+',curTopic.cards['+i+'].join(\'. \'))])">🔊 Listen</button></div>').join('')+
+    (curTopic.credit?'<div class="muted" style="font-size:.8rem;grid-column:1/-1;padding:4px">'+esc(curTopic.credit)+'</div>':'');
   go('topic');
 }
 let tq=[],tqi=0,tqRight=0,tqFirst=0,tqMiss=[];
 function startTopicQuiz(){
   const t=curTopic; tq=shuffle(t.quiz.map((q,i)=>({i,q:q[0],ans:q[1],opts:shuffle([q[1],...q[2]]),why:q[3]})));
   tqi=0;tqRight=0;tqMiss=[];tqFirst=tq.length; mode='topic';
-  $('tqTitle').textContent=t.icon+' '+t.title; go('tquiz'); tqShow();
+  $('tqTitle').textContent=t.icon+' '+t.title; $('tqCredit').textContent=t.credit||''; go('tquiz'); tqShow();
 }
 function tqShow(){
   const it=tq[tqi];
