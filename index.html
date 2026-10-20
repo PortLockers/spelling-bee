@@ -641,12 +641,15 @@ const SCHOOL_VCE_WORDS = [
 ["chromosomes","Tiny parts inside a cell that carry DNA.","Chromosomes are too small to see without a microscope.",true]
 ];
 const BUILTIN=[
-  {id:'vope',name:'VOPE Butterflies 2026',rows:VOPE_WORDS,audio:'audio/vope/'},
   {id:'school-vce',name:'School: VCe spelling + vocabulary',rows:SCHOOL_VCE_WORDS,audio:'audio/school-vce/'},
+  {id:'vope',name:'VOPE Butterflies 2026',rows:VOPE_WORDS,audio:'audio/vope/'},
   {id:'main',name:'Spelling Bee list',rows:MAIN_WORDS,audio:'audio/'}];
 let WORDS=[], NLISTS=0;
 function allSets(){return [...BUILTIN,...(S.custom||[]).map(c=>({id:c.id,name:c.name,rows:c.rows,audio:null,custom:true}))]}
-const curSet=()=>allSets().find(s=>s.id===S.set)||BUILTIN[1];
+// The list the app opens on. Bump DEFAULT_REV when changing DEFAULT_SET so devices
+// that already saved a choice switch over once (after that, her own pick sticks).
+const DEFAULT_SET='school-vce', DEFAULT_REV=2;
+const curSet=()=>allSets().find(s=>s.id===S.set)||BUILTIN.find(s=>s.id===DEFAULT_SET);
 function useSet(id){
   S.set=id; const set=curSet(); S.set=set.id;
   WORDS=set.rows.map((r,i)=>({w:r[0],def:r[1]||'',sen:r[2]||'',v:!!r[3],i,list:Math.floor(i/20)+1,a:set.audio}));
@@ -1197,7 +1200,7 @@ function saveCustomList(){
 }
 function deleteSet(id){
   const s=(S.custom||[]).find(c=>c.id===id); if(!s||!confirm('Delete the list "'+s.name+'"?'))return;
-  S.custom=S.custom.filter(c=>c.id!==id); if(S.set===id)useSet('vope'); save(); showSets();
+  S.custom=S.custom.filter(c=>c.id!==id); if(S.set===id)useSet(DEFAULT_SET); save(); showSets();
 }
 
 // ---------- setup & test ----------
@@ -1274,7 +1277,9 @@ function lettersFromText(t){const keep=cur; cur={w:'\u0000'}; try{return letters
 function stopMicTest(){cancelAnimationFrame(testRaf); if(testStream){testStream.getTracks().forEach(t=>t.stop());testStream=null}
   if(testRec){try{testRec.abort()}catch(e){} testRec=null} const l=$('micLevel'); if(l)l.style.width='0%';}
 
-load(); useSet(S.set||'vope'); renderTop();
+load();
+if(S.defRev!==DEFAULT_REV){S.set=DEFAULT_SET; S.defRev=DEFAULT_REV; save();}
+useSet(S.set||DEFAULT_SET); renderTop();
 if('speechSynthesis' in window){loadVoices(); speechSynthesis.onvoiceschanged=loadVoices;}
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 if(!S.name)askName(); else go('home');
