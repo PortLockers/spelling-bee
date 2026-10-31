@@ -678,15 +678,44 @@ const SCHOOL_VCE_WORDS = [
 ["DNA","The special material inside living things that determines how they grow and look.","Your DNA is the reason you have your mother's eyes.",true],
 ["chromosomes","Tiny parts inside a cell that carry DNA.","Chromosomes are too small to see without a microscope.",true]
 ];
+// School week Oct 26–30: Vowel Teams and Digraphs + 5 vocabulary words (teacher's definitions)
+const SCHOOL_VOWEL_TEAMS_WORDS = [
+["increase","To make or become bigger or more.","Exercise can increase how far you can run."],
+["yesterday","The day before today.","I went swimming yesterday."],
+["acquaint","To get to know someone or something.","Let me acquaint you with our new classmate."],
+["achievement","Something great that you worked hard to do.","Winning the race was a big achievement."],
+["reproach","To blame or scold someone because you are disappointed.","Mom's look of reproach told me I should have cleaned my room."],
+["marrow","The soft material inside your bones.","Bone marrow helps make new blood cells."],
+["virtue","A good quality, like honesty or kindness.","Patience is a virtue."],
+["continue","To keep going.","We will continue the game after lunch."],
+["betray","To break someone's trust.","A true friend will never betray you."],
+["array","A large group of things arranged in order; in math, objects in rows and columns.","The store had an array of colorful kites."],
+["campaign","A planned set of activities to reach a goal, like winning an election.","Our class ran a campaign to keep the beach clean."],
+["revenue","Money that a business or government takes in.","The revenue from the bake sale paid for our field trip."],
+["meadow","A field of grass and wildflowers.","Butterflies danced over the meadow."],
+["deceive","To make someone believe something that is not true.","The fox tried to deceive the crow."],
+["appeal","To ask for help; also to be interesting or attractive to someone.","Bright colors appeal to young children."],
+["agreement","When people think the same thing or decide something together.","We came to an agreement to share the swing."],
+["streamline","To make something simpler or work better.","Our teacher wants to streamline how we line up for lunch."],
+["proceed","To go on or move forward.","Please proceed to the next question."],
+["remainder","The part that is left over.","Seven divided by two is three, with a remainder of one."],
+["straight","Not bent or curved.","Draw a straight line with your ruler."],
+["endurance","The ability to keep going or continue with a difficult, unpleasant, or tiring activity over a long period.","Running a long race takes endurance.",true],
+["excel","To do very well or be the best at something.","She works hard to excel in math.",true],
+["capacity","The ability to contain, hold, or absorb something (such as lung or container volume).","Swimming helps build your lung capacity.",true],
+["motivation","A reason or inner drive for doing something.","Her motivation for practising was winning the spelling bee.",true],
+["drive","The strong ambition, determination, or desire that pushes a person to act, especially in tough situations.","His drive to succeed kept him practising every day.",true]
+];
 const BUILTIN=[
-  {id:'school-vce',name:'School: VCe spelling + vocabulary',rows:SCHOOL_VCE_WORDS,audio:'audio/school-vce/'},
+  {id:'school-vowel-teams',name:'School: Vowel Teams + vocabulary (Oct 26–30)',rows:SCHOOL_VOWEL_TEAMS_WORDS,audio:'audio/school-vowel-teams/'},
+  {id:'school-vce',name:'School: VCe spelling + vocabulary (Oct 19–23)',rows:SCHOOL_VCE_WORDS,audio:'audio/school-vce/'},
   {id:'vope',name:'VOPE Butterflies 2026',rows:VOPE_WORDS,audio:'audio/vope/'},
   {id:'main',name:'Spelling Bee list',rows:MAIN_WORDS,audio:'audio/'}];
 let WORDS=[], NLISTS=0;
 function allSets(){return [...BUILTIN,...(S.custom||[]).map(c=>({id:c.id,name:c.name,rows:c.rows,audio:null,custom:true}))]}
 // The list the app opens on. Bump DEFAULT_REV when changing DEFAULT_SET so devices
 // that already saved a choice switch over once (after that, her own pick sticks).
-const DEFAULT_SET='school-vce', DEFAULT_REV=2;
+const DEFAULT_SET='school-vowel-teams', DEFAULT_REV=3;
 const curSet=()=>allSets().find(s=>s.id===S.set)||BUILTIN.find(s=>s.id===DEFAULT_SET);
 function useSet(id){
   S.set=id; const set=curSet(); S.set=set.id;
@@ -1135,12 +1164,13 @@ function resetAll(){
 }
 
 // ---------- this week (from the class forecast; no teacher/school details — the app is public) ----------
-const WEEK={title:'📅 This week: Oct 19–23',items:[
-  '📝 <b>Spelling & Dictation Test</b> — Tuesday, 27 October',
-  '🏖️ Mid-term break Oct 23–26 · school reopens Tuesday 27th',
-  '✏️ Review spelling and learn the vocabulary meanings every night',
-  '✖️ Practise the 8× and 9× tables',
-  '📖 Read at home every night']};
+const WEEK={title:'📅 This week: Oct 26–30',items:[
+  '✏️ New spelling words: <b>Vowel Teams and Digraphs</b> — plus 5 vocabulary meanings to learn',
+  '✖️ Practise the <b>9× and 12×</b> tables',
+  '🚶 Walkathon on Friday',
+  '📖 Read at home every night'],
+  // topics taught this week: shown first with a ⭐ badge
+  topics:['math-estimation','grammar-plural','social-loyalists','religion-anglican-hierarchy','science-respiratory','writing-process','scripture-proverbs-3']};
 
 // ---------- topics: study cards + quiz. Plain JSON so the audio generator can read it. ----------
 // Clips: audio/topics/<id>/c00.mp3 (card), q00.mp3 (question), e00.mp3 (explanation)
@@ -1215,8 +1245,8 @@ const TOPICS = [
   ["She gave her grandma a ___ of flowers.","bouquet",["herd","swarm","pod"],"Flowers tied together are called a bouquet."],
   ["A ___ of people watched the Junkanoo parade.","crowd",["flock","litter","deck"],"A large group of people is called a crowd."],
   ["Our dog had a ___ of six puppies.","litter",["fleet","choir","deck"],"Baby animals born at the same time are called a litter."]]},
-{"id":"social-loyalists","subject":"Social Studies","icon":"🏝️","title":"The Loyalists",
- "intro":"After the American Revolution, the Loyalists came to The Bahamas and changed it forever. Learn the story, then take the quiz!",
+{"id":"social-loyalists","subject":"Social Studies","icon":"🏝️","title":"The Loyalists & Their Contributions",
+ "intro":"After the American Revolution, the Loyalists came to The Bahamas and changed it forever. Learn who they were and what they contributed, then take the quiz!",
  "cards":[
   ["Loyalists","People in the American colonies who stayed loyal to the King of Britain during the American Revolution."],
   ["The American Revolution","The war from 1775 to 1783 when the American colonies fought Britain to become a free country, the United States."],
@@ -1230,7 +1260,15 @@ const TOPICS = [
   ["Lord Dunmore","A governor of The Bahamas from 1787 to 1796. He built Fort Charlotte and Fort Fincastle in Nassau. Dunmore Town on Harbour Island is named after him."],
   ["Andrew Deveaux","A Loyalist who, in 1783, led a small force that took Nassau back from the Spanish."],
   ["Loyalist houses","Wooden houses with steep roofs, wooden shutters, and porches. You can still see them in places like New Plymouth and Harbour Island."],
-  ["Their legacy","The Loyalists and the enslaved Africans they brought helped shape Bahamian family names, buildings, food, and culture."]],
+  ["Their legacy","The Loyalists and the enslaved Africans they brought helped shape Bahamian family names, buildings, food, and culture."],
+  ["Contributions","Things the Loyalists gave or added that changed The Bahamas. Here are the most important ones."],
+  ["The first newspaper","The Bahama Gazette, the first newspaper in The Bahamas, was started in 1784 by John Wells, a Loyalist printer."],
+  ["Architecture","Loyalist-style wooden houses with steep roofs, shutters, and wide porches, built to handle hot sun, heavy rain, and storms."],
+  ["New settlements","Loyalists built up settlements on many islands, such as New Plymouth on Green Turtle Cay in Abaco."],
+  ["Boat building","Loyalist families in Abaco became skilled boat builders, and boat building continued there for generations."],
+  ["Plantation farming","Loyalists brought the plantation system and grew cotton. When cotton failed, many people turned to fishing, farming small crops, and the sea to earn a living."],
+  ["Government","Loyalists wanted a bigger say in how The Bahamas was run, so more islands got seats in the House of Assembly."],
+  ["People and culture","Loyalists and the enslaved Africans they brought tripled the population. Their descendants shaped Bahamian surnames, food, music, and traditions."]],
  "quiz":[
   ["Who were the Loyalists?","People who stayed loyal to the King of Britain",["People who fought for America to be free","Pirates who lived in Nassau","The first Lucayan people"],"The Loyalists stayed loyal to the King of Britain during the American Revolution."],
   ["Which war made the Loyalists leave America?","The American Revolution",["World War Two","The War of 1812","The American Civil War"],"After the American Revolution, many Loyalists left America."],
@@ -1245,7 +1283,15 @@ const TOPICS = [
   ["Which of these is an island where Loyalists settled?","Abaco",["Jamaica","Cuba","Puerto Rico"],"Many Loyalists settled on Abaco, as well as Eleuthera, Long Island, Exuma, and other islands."],
   ["What is a plantation?","A large farm worked by many people",["A small garden","A kind of boat","A fort"],"A plantation is a large farm. Loyalist plantations were worked by enslaved people."],
   ["Who led a force that took Nassau back from the Spanish in 1783?","Andrew Deveaux",["Lord Dunmore","Christopher Columbus","Blackbeard"],"Andrew Deveaux, a Loyalist, took Nassau back from the Spanish in 1783."],
-  ["What do Loyalist-style houses usually have?","Wooden shutters and porches",["Glass walls","Roofs made of ice","No windows at all"],"Loyalist houses are wooden, with steep roofs, wooden shutters, and porches."]]},
+  ["What do Loyalist-style houses usually have?","Wooden shutters and porches",["Glass walls","Roofs made of ice","No windows at all"],"Loyalist houses are wooden, with steep roofs, wooden shutters, and porches."],
+  ["What was the first newspaper in The Bahamas?","The Bahama Gazette",["The Nassau Times","The Island News","The Loyalist Daily"],"The Bahama Gazette, started in 1784, was the first newspaper in The Bahamas."],
+  ["Who started The Bahama Gazette?","John Wells, a Loyalist printer",["Lord Dunmore","Andrew Deveaux","Christopher Columbus"],"John Wells, a Loyalist printer, started The Bahama Gazette in 1784."],
+  ["What is a contribution?","Something you give or add that helps or changes things",["Something you take away","A kind of boat","A type of cotton"],"A contribution is something given or added, like the Loyalists' newspaper, houses, and skills."],
+  ["Which skill did Loyalist families in Abaco become known for?","Boat building",["Gold mining","Making snow","Building castles"],"Loyalist families in Abaco became skilled boat builders."],
+  ["Which settlement did Loyalists build up in Abaco?","New Plymouth on Green Turtle Cay",["Freeport","Kingston","Miami"],"Loyalists built up New Plymouth on Green Turtle Cay, Abaco."],
+  ["Why were Loyalist houses built with steep roofs and shutters?","To handle hot sun, heavy rain, and storms",["To keep out snow","To look like castles","To hide from pirates"],"Steep roofs and shutters helped houses handle hot sun, heavy rain, and storms."],
+  ["How did the Loyalists change the government?","More islands got seats in the House of Assembly",["They crowned a new king","They closed the House of Assembly","They moved the capital to Abaco"],"Loyalists wanted a bigger say, so more islands got seats in the House of Assembly."],
+  ["When cotton failed, how did many people earn a living?","Fishing, farming small crops, and the sea",["Selling snow","Building cars","Mining diamonds"],"When cotton failed, many people turned to fishing, small farms, and the sea."]]},
 {"id":"writing-process","subject":"Writing","icon":"✍️","title":"The Writing Process",
  "intro":"Good writers follow five steps. Learn each step, then take the quiz!",
  "cards":[
@@ -1299,7 +1345,114 @@ const TOPICS = [
   ["What does God promise in verse 6?","He will make your paths straight",["He will make you rich","He will do your homework","You will never have to try"],"Verse 6 says he will make your paths straight. God will guide your way."],
   ["What comes right after “Trust in the LORD with all your heart”?","and lean not on your own understanding",["and he will make your paths straight","in all your ways submit to him","for God so loved the world"],"Trust in the LORD with all your heart and lean not on your own understanding."],
   ["Who wrote many of the proverbs?","King Solomon",["Noah","Jonah","Pharaoh"],"King Solomon wrote many of the wise sayings in Proverbs."],
-  ["Which part of the Bible is the Book of Proverbs in?","The Old Testament",["The New Testament","The Gospels","The Book of Revelation"],"Proverbs is in the Old Testament."]]}
+  ["Which part of the Bible is the Book of Proverbs in?","The Old Testament",["The New Testament","The Gospels","The Book of Revelation"],"Proverbs is in the Old Testament."]]},
+{"id":"math-subtraction","subject":"Math","icon":"➖","title":"Subtraction of Large Numbers","gen":"sub","count":10,
+ "intro":"Learn the steps, then solve 10 new problems. Every quiz has different numbers!",
+ "cards":[
+  ["Subtraction","Taking one number away from another. The answer is called the difference."],
+  ["Step 1: Line up the numbers","Write the bigger number on top. Line up the ones, tens, hundreds, and thousands in columns."],
+  ["Step 2: Start with the ones","Always start subtracting in the ones column, on the right, then move left."],
+  ["Step 3: Regroup when you need to","If the top digit is smaller than the bottom digit, regroup: take 1 from the next place on the left. It becomes 10 more in the column you are working on."],
+  ["Example: 52 − 17","Ones: 2 − 7? Not enough, so regroup 1 ten: 12 − 7 = 5. Tens: now 4 − 1 = 3. The answer is 35.","Example: 52 minus 17. Ones: 2 minus 7? Not enough, so regroup 1 ten. 12 minus 7 is 5. Tens: now 4 minus 1 is 3. The answer is 35."],
+  ["Regrouping across zeros","In 500 − 123 there are no tens to take from, so regroup the hundreds: 5 hundreds becomes 4 hundreds, 9 tens, and 10 ones. Then subtract: 377.","Regrouping across zeros. In 500 minus 123, there are no tens to take from, so regroup the hundreds. 5 hundreds becomes 4 hundreds, 9 tens, and 10 ones. Then subtract. The answer is 377."],
+  ["Check your answer","Add your answer to the number you took away. If you get the top number, you're right! 35 + 17 = 52.","Check your answer. Add your answer to the number you took away. If you get the top number, you're right! 35 plus 17 equals 52."]]},
+{"id":"math-addition","subject":"Math","icon":"➕","title":"Addition with Regrouping","gen":"add","count":10,
+ "intro":"Learn the steps, then solve 10 new problems. Every quiz has different numbers!",
+ "cards":[
+  ["Addition","Putting numbers together. The answer is called the sum."],
+  ["Line up, then start with the ones","Line up the places in columns. Add the ones column first, then move left."],
+  ["Regrouping (carrying)","If a column adds up to 10 or more, write the ones digit and carry the 1 to the next column on the left."],
+  ["Example: 48 + 37","Ones: 8 + 7 = 15. Write 5, carry 1 ten. Tens: 1 + 4 + 3 = 8. The answer is 85.","Example: 48 plus 37. Ones: 8 plus 7 is 15. Write 5, and carry 1 ten. Tens: 1 plus 4 plus 3 is 8. The answer is 85."],
+  ["Big numbers work the same way","Keep adding each column from right to left, carrying whenever a column adds up to 10 or more."]]},
+{"id":"math-place-value","subject":"Math","icon":"🔢","title":"Place Value & Number Forms","gen":"pv","count":12,
+ "intro":"Learn about place value and the three ways to write a number, then take a 12-question quiz.",
+ "cards":[
+  ["Place value","The value of a digit depends on its place in the number."],
+  ["The places","From right to left: ones, tens, hundreds, thousands, ten thousands, hundred thousands."],
+  ["Commas","A comma separates every three digits, counting from the right, like 245,817."],
+  ["Digit, place, and value","In 47,215 the digit 7 is in the thousands place. Its value is 7,000."],
+  ["Standard form","The number written with digits: 36,402."],
+  ["Expanded form","The number written as the value of each digit added together: 30,000 + 6,000 + 400 + 2.","Expanded form. The number written as the value of each digit added together: 30,000 plus 6,000 plus 400 plus 2."],
+  ["Word form","The number written in words: thirty-six thousand, four hundred two."],
+  ["Zeros hold a place","In 30,504 the zeros show there are no thousands and no tens."]]},
+{"id":"math-compare","subject":"Math","icon":"⚖️","title":"Compare & Order Numbers","gen":"cmp","count":12,
+ "intro":"Learn how to compare and order big numbers, then take a 12-question quiz.",
+ "cards":[
+  ["Compare","Decide which number is greater, which is less, or if they are equal."],
+  ["The symbols","> means greater than. < means less than. = means equal to. The open side always faces the bigger number.","The symbols. The greater-than sign means greater than. The less-than sign means less than. The equals sign means equal to. The open side always faces the bigger number."],
+  ["How to compare","Line up the numbers by place value. Start on the left, at the greatest place, and compare the digits until one is different."],
+  ["Example","45,312 and 45,231: the ten thousands are the same (4), the thousands are the same (5), but in the hundreds 3 is greater than 2. So 45,312 > 45,231.","Example. 45,312 and 45,231. The ten thousands are the same. The thousands are the same. But in the hundreds, 3 is greater than 2. So 45,312 is greater than 45,231."],
+  ["More digits","A whole number with more digits is greater: 10,000 > 9,999.","More digits. A whole number with more digits is greater. 10,000 is greater than 9,999."],
+  ["Order","Least to greatest means smallest first. Greatest to least means biggest first."]]},
+{"id":"math-estimation","subject":"Math","icon":"🎯","title":"Estimation","gen":"est","count":12,
+ "intro":"Estimating means finding an answer that is close, not exact. Learn how to round, then take a 12-question quiz with new numbers every time!",
+ "cards":[
+  ["Estimate","An answer that is close to the exact answer, but not exact. We estimate to check answers and to do math quickly in our heads."],
+  ["Rounding","Changing a number to a nearby number that is easier to work with, like 48 to 50."],
+  ["The rounding rule","Look at the digit to the right of the place you are rounding to. If it is 5 or more, round up. If it is 4 or less, keep the digit the same. Then change the digits after it to zeros."],
+  ["Round to the nearest ten","Look at the ones digit. 63 rounds to 60. 67 rounds to 70. 65 rounds up to 70."],
+  ["Round to the nearest hundred","Look at the tens digit. 742 rounds to 700. 768 rounds to 800."],
+  ["Round to the nearest thousand","Look at the hundreds digit. 4,381 rounds to 4,000. 4,629 rounds to 5,000."],
+  ["Estimate a sum","Round each number first, then add. 487 + 312: 500 + 300 = 800. The exact answer, 799, is close!","Estimate a sum. Round each number first, then add. 487 plus 312 becomes 500 plus 300, which is 800. The exact answer, 799, is close!"],
+  ["Estimate a difference","Round each number first, then subtract. 6,820 − 2,190: 7,000 − 2,000 = 5,000.","Estimate a difference. Round each number first, then subtract. 6,820 minus 2,190 becomes 7,000 minus 2,000, which is 5,000."],
+  ["Words that mean estimate","About, around, roughly, nearly, and approximately all tell you to estimate."]]},
+{"id":"grammar-plural","subject":"Grammar","icon":"📝","title":"Singular & Plural Nouns",
+ "intro":"Singular means one. Plural means more than one. Learn the rules for making plurals, then take the quiz!",
+ "cards":[
+  ["Singular noun","A noun that names just one person, place, animal, or thing: one dog, one box, one baby."],
+  ["Plural noun","A noun that names more than one: two dogs, three boxes, four babies."],
+  ["Most nouns: add -s","dog → dogs, book → books, shell → shells.","Most nouns: add s. Dog becomes dogs. Book becomes books. Shell becomes shells."],
+  ["Ends in s, x, z, ch, or sh: add -es","bus → buses, box → boxes, bench → benches, dish → dishes.","Nouns that end in s, x, z, c h, or s h: add e s. Bus becomes buses. Box becomes boxes. Bench becomes benches. Dish becomes dishes."],
+  ["Consonant + y: change y to i, add -es","baby → babies, city → cities, berry → berries.","Nouns that end in a consonant and y: change the y to i, and add e s. Baby becomes babies. City becomes cities. Berry becomes berries."],
+  ["Vowel + y: just add -s","boy → boys, key → keys, day → days.","Nouns that end in a vowel and y: just add s. Boy becomes boys. Key becomes keys. Day becomes days."],
+  ["Ends in f or fe: often change to -ves","leaf → leaves, knife → knives, wolf → wolves. (But roof → roofs!)","Nouns that end in f or f e: often change to v e s. Leaf becomes leaves. Knife becomes knives. Wolf becomes wolves. But roof becomes roofs!"],
+  ["Ends in o","Some add -es: potato → potatoes, tomato → tomatoes, hero → heroes. Others just add -s: piano → pianos, radio → radios.","Nouns that end in o. Some add e s: potato becomes potatoes, tomato becomes tomatoes, hero becomes heroes. Others just add s: piano becomes pianos, radio becomes radios."],
+  ["Irregular plurals","These change in a special way: child → children, man → men, woman → women, tooth → teeth, foot → feet, mouse → mice, goose → geese, person → people.","Irregular plurals change in a special way. Child becomes children. Man becomes men. Woman becomes women. Tooth becomes teeth. Foot becomes feet. Mouse becomes mice. Goose becomes geese. Person becomes people."],
+  ["Same singular and plural","Some nouns don't change at all: one sheep, two sheep; one deer, two deer; one fish, many fish."]],
+ "quiz":[
+  ["What is a singular noun?","A noun that names just one",["A noun that names more than one","An action word","A describing word"],"Singular means one: one dog, one box."],
+  ["What is the plural of box?","boxes",["boxs","boxies","boxen"],"Box ends in x, so add -es: boxes."],
+  ["What is the plural of baby?","babies",["babys","babyes","babis"],"Baby ends in a consonant and y, so change y to i and add -es: babies."],
+  ["What is the plural of boy?","boys",["boies","boyes","boyz"],"Boy ends in a vowel and y, so just add -s: boys."],
+  ["What is the plural of leaf?","leaves",["leafs","leafes","leavs"],"Leaf changes f to v and adds -es: leaves."],
+  ["What is the plural of child?","children",["childs","childrens","childes"],"Child is irregular: the plural is children."],
+  ["What is the plural of tooth?","teeth",["tooths","teeths","toothes"],"Tooth is irregular: the plural is teeth."],
+  ["What is the plural of mouse?","mice",["mouses","mices","meese"],"Mouse is irregular: the plural is mice."],
+  ["What is the plural of sheep?","sheep",["sheeps","sheepes","shoop"],"Sheep stays the same: one sheep, two sheep."],
+  ["What is the plural of bench?","benches",["benchs","benchies","bench"],"Bench ends in ch, so add -es: benches."],
+  ["What is the plural of city?","cities",["citys","cityes","cits"],"City ends in a consonant and y: change y to i and add -es: cities."],
+  ["What is the plural of potato?","potatoes",["potatos","potatoies","potato"],"Potato adds -es: potatoes."],
+  ["What is the plural of knife?","knives",["knifes","knifs","knivs"],"Knife changes fe to v and adds -es: knives."],
+  ["Which word is plural?","dishes",["dish","bowl","plate"],"Dishes names more than one dish, so it is plural."],
+  ["Which word is singular?","goose",["geese","feet","people"],"Goose names just one. Geese is the plural."],
+  ["Choose the correct sentence.","The children played with their toys.",["The childs played with their toys.","The childrens played with their toys.","The child played with their toyes."],"Children is the plural of child, and toys just adds -s."]]},
+{"id":"religion-anglican-hierarchy","subject":"Religion","icon":"⛪","title":"The Hierarchy of the Anglican Church",
+ "intro":"The hierarchy is the order of leaders in the church, from the highest to the lowest. Learn each role, then take the quiz!",
+ "cards":[
+  ["The Anglican Church","A Christian church that began in England. The Anglican Church in The Bahamas is part of the worldwide Anglican Communion."],
+  ["Hierarchy","The order of leaders, from the highest to the lowest."],
+  ["The Archbishop of Canterbury","The senior leader of the worldwide Anglican Communion. His church is Canterbury Cathedral in England."],
+  ["Archbishop","A bishop who leads a whole province, which is a group of dioceses. The Bahamas is in the Church in the Province of the West Indies, led by the Archbishop of the West Indies."],
+  ["Bishop","Leads a diocese, which is all the churches in an area. Our diocese is the Diocese of The Bahamas and the Turks and Caicos Islands."],
+  ["Archdeacon","A senior priest who helps the bishop look after the churches in one part of the diocese."],
+  ["Priest","Leads a church family, called a parish. A priest leads worship and Holy Communion, and baptizes and marries people. The priest in charge of a parish is called the rector."],
+  ["Deacon","The first order of ordained ministers. A deacon helps the priest, reads the Gospel in church, and serves people in need."],
+  ["The laity","Church members who are not ordained, like you and your family! They serve as lay readers, choir members, acolytes, and Sunday school teachers."],
+  ["The three holy orders","Bishops, priests, and deacons are the three orders of ordained ministers."],
+  ["Cathedral","The bishop's main church. In The Bahamas, it is Christ Church Cathedral in Nassau."]],
+ "quiz":[
+  ["What does hierarchy mean?","The order of leaders, from highest to lowest",["A type of prayer","A church song","The church building"],"A hierarchy is the order of leaders, from the highest to the lowest."],
+  ["Who is the senior leader of the worldwide Anglican Communion?","The Archbishop of Canterbury",["The Pope","The Prime Minister","The Archdeacon"],"The Archbishop of Canterbury is the senior leader of the worldwide Anglican Communion."],
+  ["Who leads a diocese?","A bishop",["A deacon","A choir member","A lay reader"],"A bishop leads a diocese, which is all the churches in an area."],
+  ["Who leads a whole province of dioceses?","An archbishop",["A deacon","A rector","An acolyte"],"An archbishop leads a province, which is a group of dioceses."],
+  ["Which province is The Bahamas part of?","The Province of the West Indies",["The Province of Canada","The Province of Florida","The Province of London"],"The Bahamas is in the Church in the Province of the West Indies."],
+  ["What are the three holy orders?","Bishops, priests, and deacons",["Kings, queens, and princes","Choirs, readers, and acolytes","Teachers, students, and parents"],"The three orders of ordained ministers are bishops, priests, and deacons."],
+  ["Who leads a parish church and gives Holy Communion?","A priest",["A deacon","A choir member","An usher"],"A priest leads a parish, leads worship, and gives Holy Communion."],
+  ["What is the priest in charge of a parish called?","The rector",["The archbishop","The acolyte","The deacon"],"The priest in charge of a parish is called the rector."],
+  ["Who helps the priest and reads the Gospel in church?","A deacon",["The archbishop","The organist","The usher"],"A deacon helps the priest, reads the Gospel, and serves people in need."],
+  ["Who are the laity?","Church members who are not ordained",["Only bishops","Only priests","The church buildings"],"The laity are church members who are not ordained, like you and your family."],
+  ["What is a cathedral?","The bishop's main church",["A small chapel at home","A Sunday school room","A church bell"],"A cathedral is the bishop's main church, like Christ Church Cathedral in Nassau."],
+  ["Who helps the bishop look after churches in one part of the diocese?","An archdeacon",["An acolyte","A choir member","A lay reader"],"An archdeacon is a senior priest who helps the bishop look after churches in one area."]]}
 ];
 // END TOPICS
 
@@ -1307,12 +1460,14 @@ const tclip=(t,k,i,text)=>({url:'audio/topics/'+t.id+'/'+k+pad(i)+'.mp3',text});
 const speakable=q=>q.replace(/_{2,}/g,'blank');
 function renderTopicTiles(){
   S.topics=S.topics||{};
-  $('topicTiles').innerHTML=TOPICS.map(t=>{const st=S.topics[t.id];
-    return '<button class="mode ghost" onclick="showTopic(\''+t.id+'\')"><span class="big">'+t.icon+'</span>'+
+  const wk=WEEK.topics||[], rank=t=>wk.includes(t.id)?wk.indexOf(t.id):99;
+  $('topicTiles').innerHTML=TOPICS.slice().sort((a,b)=>rank(a)-rank(b)).map(t=>{const st=S.topics[t.id];
+    return '<button class="mode ghost" onclick="showTopic(\''+t.id+'\')"'+(wk.includes(t.id)?' style="border-color:var(--honey)"':'')+'><span class="big">'+t.icon+'</span>'+
+      (wk.includes(t.id)?'<span class="pill" style="font-size:.75rem;padding:2px 8px">⭐ This week</span>':'')+
       '<span class="t">'+esc(t.subject)+': '+esc(t.title)+'</span><span class="d">'+
-      (st?'Best quiz score: '+st.best+' / '+st.of:t.cards.length+' study cards · '+t.quiz.length+'-question quiz')+'</span></button>'}).join('')+
+      (st?'Best quiz score: '+st.best+' / '+st.of:t.cards.length+' study cards · '+(t.gen?t.count+' new problems each time':t.quiz.length+'-question quiz'))+'</span></button>'}).join('')+
     '<a class="mode ghost" href="https://portlockers.github.io/grade4-math/" style="text-decoration:none;color:inherit;background:#fff;border:2px solid var(--line);border-radius:16px;box-shadow:0 3px 0 var(--line);display:flex;flex-direction:column;gap:4px;padding:18px">'+
-      '<span class="big">✖️</span><span class="t" style="font-weight:bold">Math: Times Tables</span><span class="d" style="font-size:.9rem">Opens the math app — practise the 8× and 9× tables.</span></a>';
+      '<span class="big">✖️</span><span class="t" style="font-weight:bold">Math: Times Tables</span><span class="d" style="font-size:.9rem">Opens the math app — practise the 9× and 12× tables.</span></a>';
   $('weekTitle').innerHTML=WEEK.title; $('weekItems').innerHTML=WEEK.items.map(i=>'<li>'+i+'</li>').join('');
 }
 let curTopic=null;
@@ -1321,33 +1476,196 @@ function showTopic(id){
   $('topicTitle').textContent=curTopic.icon+' '+curTopic.title; $('topicIntro').textContent=curTopic.intro;
   $('topicCards').innerHTML=curTopic.cards.map((c,i)=>'<div class="card" style="margin:0">'+
     '<div style="font-size:1.4rem;font-weight:bold">'+esc(c[0])+'</div><div style="margin:6px 0 10px;font-size:1.05rem">'+esc(c[1])+'</div>'+
-    '<button class="small blue" onclick="playSeq([tclip(curTopic,\'c\','+i+',curTopic.cards['+i+'].join(\'. \'))])">🔊 Listen</button></div>').join('')+
+    '<button class="small blue" onclick="playSeq([tclip(curTopic,\'c\','+i+',curTopic.cards['+i+'][2]||curTopic.cards['+i+'].slice(0,2).join(\'. \'))])">🔊 Listen</button></div>').join('')+
     (curTopic.credit?'<div class="muted" style="font-size:.8rem;grid-column:1/-1;padding:4px">'+esc(curTopic.credit)+'</div>':'');
   go('topic');
 }
+// ---------- math: fresh problems every quiz ----------
+const fmt=n=>n.toLocaleString('en-US');
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.random()*a.length|0];
+const PLACES=['ones','tens','hundreds','thousands','ten thousands','hundred thousands'];
+const cap=s=>s[0].toUpperCase()+s.slice(1);
+const digitsOf=n=>[...String(n)].reverse().map(Number);           // ones first
+const W1=['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+const W10=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+const w99=n=>n<20?W1[n]:W10[n/10|0]+(n%10?'-'+W1[n%10]:'');
+const w999=n=>{const h=n/100|0,r=n%100;return (h?W1[h]+' hundred':'')+(h&&r?' ':'')+(r?w99(r):'')};
+const numWords=n=>{if(!n)return 'zero';const th=n/1000|0,r=n%1000;return (th?w999(th)+' thousand':'')+(th&&r?', ':'')+(r?w999(r):'')};
+const expanded=n=>digitsOf(n).map((d,i)=>d*10**i).filter(v=>v).reverse().map(fmt).join(' + ');
+// three distinct wrong options that differ from the answer
+function mc(q,ans,cands,why){
+  const wrong=[...new Set(cands.filter(c=>c!==ans))].slice(0,3);
+  return {q,ans,opts:shuffle([ans,...wrong]),why};
+}
+// a number with n digits whose digits are all different (so "the digit 7" is unambiguous)
+function uniqueDigits(n){let s;do{s=shuffle([...'0123456789']).slice(0,n).join('')}while(s[0]==='0');return +s}
+function vertical(a,b,op){
+  const top=fmt(a), bot=op+' '+fmt(b), w=Math.max(top.length,bot.length);
+  return '<div style="display:inline-block;font-family:\'Courier New\',monospace;font-size:2.3rem;line-height:1.25;white-space:pre;text-align:right">'+
+    esc(top.padStart(w))+'\n'+esc(bot.padStart(w))+'\n<span style="display:block;border-top:4px solid var(--ink)"></span></div>';
+}
+function hasRegroup(a,b,op){const A=digitsOf(a),B=digitsOf(b);
+  return A.some((d,i)=>op==='−'?d<(B[i]||0):d+(B[i]||0)>=10)}
+function subSteps(a,b){
+  const A=digitsOf(a),B=digitsOf(b),L=[]; let borrow=0;
+  for(let i=0;i<A.length;i++){
+    let top=A[i]-borrow, bot=B[i]||0, note='';
+    if(top<bot){top+=10;borrow=1;note=' (regrouped)'}else borrow=0;
+    if(i===A.length-1&&top-bot===0&&i>0)break;                      // leading zero — nothing to write
+    L.push(cap(PLACES[i])+': '+top+' − '+bot+' = '+(top-bot)+note);
+  }
+  return L.join('<br>')+'<br><b>Answer: '+fmt(a-b)+'</b> · Check: '+fmt(a-b)+' + '+fmt(b)+' = '+fmt(a)+' ✔';
+}
+function addSteps(a,b){
+  const A=digitsOf(a),B=digitsOf(b),n=Math.max(A.length,B.length),L=[]; let carry=0;
+  for(let i=0;i<n;i++){
+    const x=A[i]||0,y=B[i]||0,s=x+y+carry;
+    L.push(cap(PLACES[i])+': '+(carry?carry+' + ':'')+x+' + '+y+' = '+s+(s>=10?' → write '+(s%10)+', carry 1':''));
+    carry=s>=10?1:0;
+  }
+  if(carry)L.push('Write the last carried 1 in front.');
+  return L.join('<br>')+'<br><b>Answer: '+fmt(a+b)+'</b>';
+}
+const GEN={
+  sub(count){return Array.from({length:count},(_,k)=>{
+    const d=k<count/2?4:5; let a,b;
+    do{
+      a=Math.random()<.3?rnd(1,9)*10**(d-1)+rnd(0,9)*(Math.random()<.5?1:10)+rnd(0,9):rnd(10**(d-1),10**d-1);  // some with zeros
+      b=rnd(10**(d-2),a-1);
+    }while(!hasRegroup(a,b,'−'));
+    return {type:'num',html:vertical(a,b,'−'),say:fmt(a)+' minus '+fmt(b),ans:a-b,why:subSteps(a,b)};
+  })},
+  add(count){return Array.from({length:count},(_,k)=>{
+    const d=k<count/2?4:5; let a,b;
+    do{a=rnd(10**(d-1),10**d-1);b=rnd(10**(d-2),10**d-1)}while(!hasRegroup(a,b,'+')||a+b>999999);
+    return {type:'num',html:vertical(a,b,'+'),say:fmt(a)+' plus '+fmt(b),ans:a+b,why:addSteps(a,b)};
+  })},
+  pv(count){
+    const kinds=shuffle(['place','value','expanded','standard','word','fromWords','place','value','expanded','standard','word','fromWords']);
+    return kinds.slice(0,count).map(kind=>{
+      const n=uniqueDigits(rnd(5,6)), D=digitsOf(n);
+      if(kind==='place'||kind==='value'){
+        let i; do{i=rnd(0,D.length-1)}while(!D[i]); const d=D[i];
+        if(kind==='place')return mc('In '+fmt(n)+', what is the place of the digit '+d+'?',PLACES[i],
+          shuffle(PLACES.slice(0,D.length).filter(p=>p!==PLACES[i])),'The '+d+' is in the '+PLACES[i]+' place.');
+        return mc('What is the value of the '+d+' in '+fmt(n)+'?',fmt(d*10**i),
+          [fmt(d),fmt(d*10**(i+1)),fmt(d*10**Math.max(0,i-1)),fmt(d*10**(i+2)),fmt(d*10**(i+3))],'The '+d+' is in the '+PLACES[i]+' place, so its value is '+fmt(d*10**i)+'.');
+      }
+      // put a zero in some numbers — zeros are where mistakes happen
+      let m=n; if(Math.random()<.6){const z=rnd(1,D.length-2); m=n-D[z]*10**z}
+      const s=String(m), sw=rnd(0,s.length-2), swapped=+(s.slice(0,sw)+s[sw+1]+s[sw]+s.slice(sw+2));
+      const near=[+s.replace(/0/,''),swapped,m*10,m+10**rnd(1,3),Math.abs(m-10**rnd(1,3)),m+10**rnd(2,4)]
+        .filter(v=>v>=1000&&v!==m&&v<1e6);
+      if(kind==='expanded')return mc('Which is the expanded form of '+fmt(m)+'?',expanded(m),near.map(expanded),
+        'Write the value of each digit and add them: '+expanded(m)+'.');
+      if(kind==='standard')return mc('Write in standard form: '+expanded(m),fmt(m),near.map(fmt),
+        'Put each digit in its place — use 0 for any empty place: '+fmt(m)+'.');
+      if(kind==='word')return mc('Which is the word form of '+fmt(m)+'?',numWords(m),near.map(numWords),
+        fmt(m)+' in words is '+numWords(m)+'.');
+      return mc('Write in standard form: '+numWords(m),fmt(m),near.map(fmt),numWords(m)+' is '+fmt(m)+'.');
+    });
+  },
+  est(count){
+    const PN={1:'ten',2:'hundred',3:'thousand'};
+    const roundTo=(n,p)=>Math.round(n/10**p)*10**p;               // 5 or more rounds up
+    const roundWhy=(n,p)=>{const look=digitsOf(n)[p-1];
+      return 'Look at the '+PLACES[p-1]+' digit: '+look+(look>=5?' is 5 or more, so round up':' is 4 or less, so round down')+'. '+fmt(n)+' rounds to '+fmt(roundTo(n,p))+'.'};
+    const kinds=shuffle(['r10','r100','r1000','r100','r1000','r10','sum','sum','sum','diff','diff','diff']);
+    return kinds.slice(0,count).map(kind=>{
+      if(kind[0]==='r'){
+        const p=kind==='r10'?1:kind==='r100'?2:3;
+        let n; do{n=rnd(p===1?11:p===2?101:1001,p===3?99999:9999)}while(n%10**p===0);
+        if(Math.random()<.25)n=n-n%10**p+5*10**(p-1)+(n%10**(p-1));     // sometimes the tricky "5" case
+        const r=roundTo(n,p), down=n-n%10**p, up=down+10**p;
+        return mc('Round '+fmt(n)+' to the nearest '+PN[p]+'.',fmt(r),
+          [fmt(r===up?down:up),fmt(roundTo(n,p===3?2:p+1)),fmt(r+10**p),fmt(Math.max(0,r-2*10**p))],roundWhy(n,p));
+      }
+      // estimate a sum or difference: 3-digit numbers → nearest hundred, 4-digit → nearest thousand
+      const big=Math.random()<.5, p=big?3:2, lo=big?1000:100, hi=big?9999:999;
+      let a=rnd(lo,hi), b=rnd(lo,hi); if(kind==='diff'&&b>a)[a,b]=[b,a];
+      if(kind==='diff'&&roundTo(a,p)===roundTo(b,p))b=Math.max(lo,b-10**p);
+      const ra=roundTo(a,p), rb=roundTo(b,p), op=kind==='sum'?'+':'−', est=kind==='sum'?ra+rb:ra-rb, exact=kind==='sum'?a+b:a-b;
+      return mc('Estimate by rounding each number to the nearest '+PN[p]+':\n'+fmt(a)+' '+op+' '+fmt(b),fmt(est),
+        [fmt(exact),fmt(est+10**p),fmt(Math.max(0,est-10**p)),fmt(est+2*10**p)],
+        fmt(a)+' rounds to '+fmt(ra)+'. '+fmt(b)+' rounds to '+fmt(rb)+'. '+fmt(ra)+' '+op+' '+fmt(rb)+' = '+fmt(est)+'. (The exact answer is '+fmt(exact)+' — close!)');
+    });
+  },
+  cmp(count){
+    const kinds=shuffle(['sym','sym','sym','sym','sym','great','least','great','least','order','order','reverse']);
+    // numbers that share their first digits, so she must look past the first place
+    const close=(d)=>{const base=rnd(10**(d-1),10**d-1),p=rnd(1,d-2);return ()=>{let v;do{v=base-base%10**(p+1)+rnd(0,10**(p+1)-1)}while(v<10**(d-1));return v}};
+    return kinds.slice(0,count).map(kind=>{
+      const g=close(rnd(4,6));
+      if(kind==='sym'){
+        const eq=Math.random()<.12; let a=g(),b=eq?a:g(); while(!eq&&b===a)b=g();
+        const s=a>b?'>':a<b?'<':'=';
+        return mc(fmt(a)+'  ◻  '+fmt(b)+'\nWhich symbol goes in the box?',s,['>','<','='],
+          fmt(a)+(s==='>'?' is greater than ':s==='<'?' is less than ':' is equal to ')+fmt(b)+', so use '+s+'.');
+      }
+      const ns=[...new Set(Array.from({length:6},g))].slice(0,4); while(ns.length<4)ns.push(ns[0]+ns.length*111);
+      if(kind==='great'||kind==='least'){
+        const ans=kind==='great'?Math.max(...ns):Math.min(...ns);
+        return mc('Which number is the '+(kind==='great'?'greatest':'least')+'?',fmt(ans),ns.map(fmt),
+          'Compare from the greatest place. '+fmt(ans)+' is the '+(kind==='great'?'greatest':'least')+'.');
+      }
+      const three=ns.slice(0,3), asc=three.slice().sort((x,y)=>x-y), want=kind==='order'?asc:asc.slice().reverse();
+      const show=a=>a.map(fmt).join(',  ');
+      const perms=[[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]].map(p=>show(p.map(i=>asc[i])));
+      return mc('Which shows these numbers from '+(kind==='order'?'least to greatest':'greatest to least')+'?\n'+shuffle(three.slice()).map(fmt).join(',  '),
+        show(want),shuffle(perms),'From '+(kind==='order'?'least to greatest':'greatest to least')+': '+show(want)+'.');
+    });
+  }
+};
+
 let tq=[],tqi=0,tqRight=0,tqFirst=0,tqMiss=[];
 function startTopicQuiz(){
-  const t=curTopic; tq=shuffle(t.quiz.map((q,i)=>({i,q:q[0],ans:q[1],opts:shuffle([q[1],...q[2]]),why:q[3]})));
+  const t=curTopic;
+  tq=t.gen?GEN[t.gen](t.count||10).map((q,i)=>({...q,i,gen:true}))
+    :shuffle(t.quiz.map((q,i)=>({i,q:q[0],ans:q[1],opts:shuffle([q[1],...q[2]]),why:q[3]})));
   tqi=0;tqRight=0;tqMiss=[];tqFirst=tq.length; mode='topic';
   $('tqTitle').textContent=t.icon+' '+t.title; $('tqCredit').textContent=t.credit||''; go('tquiz'); tqShow();
 }
 function tqShow(){
   const it=tq[tqi];
   $('tqCount').textContent=(tqi+1)+' / '+tq.length; $('tqBar').style.width=(100*tqi/tq.length)+'%';
-  $('tqQ').textContent=it.q; $('tqFb').innerHTML=''; $('tqNext').classList.add('hidden');
-  $('tqOpts').innerHTML=it.opts.map((o,k)=>'<button class="ghost" data-k="'+k+'" style="font-size:1.15rem">'+esc(o)+'</button>').join('');
-  $('tqOpts').querySelectorAll('button').forEach(b=>b.onclick=()=>tqPick(+b.dataset.k,b));
-  setTimeout(()=>{if(tq[tqi]===it&&!$('s-tquiz').classList.contains('hidden'))tqReplay()},200);
+  $('tqFb').innerHTML=''; $('tqNext').classList.add('hidden');
+  $('tqQ').style.whiteSpace='pre-line';
+  if(it.html)$('tqQ').innerHTML=it.html; else $('tqQ').textContent=it.q;
+  if(it.type==='num'){
+    $('tqOpts').innerHTML='<input class="spell" id="tqIn" inputmode="numeric" autocomplete="off" placeholder="your answer" style="margin:0">'+
+      '<button id="tqCheck">Check ✔</button>';
+    $('tqIn').onkeydown=e=>{if(e.key==='Enter')tqNum()}; $('tqCheck').onclick=tqNum;
+    setTimeout(()=>$('tqIn')&&$('tqIn').focus(),50);
+  }else{
+    $('tqOpts').innerHTML=it.opts.map((o,k)=>'<button class="ghost" data-k="'+k+'" style="font-size:1.15rem;white-space:normal">'+esc(o)+'</button>').join('');
+    $('tqOpts').querySelectorAll('button').forEach(b=>b.onclick=()=>tqPick(+b.dataset.k,b));
+  }
+  // written quizzes have Ava clips; math problems are on screen (🔊 reads them with the tablet voice)
+  if(!it.gen)setTimeout(()=>{if(tq[tqi]===it&&!$('s-tquiz').classList.contains('hidden'))tqReplay()},200);
 }
-function tqReplay(){const it=tq[tqi]; if(it)playSeq([tclip(curTopic,'q',it.i,speakable(it.q))])}
+function tqReplay(){const it=tq[tqi]; if(!it)return;
+  if(it.gen)playSeq([{url:null,text:it.say||it.q.replace(/◻/g,'blank').replace(/>/g,' greater than ').replace(/</g,' less than ')}]);
+  else playSeq([tclip(curTopic,'q',it.i,speakable(it.q))])}
+function tqNum(){
+  const it=tq[tqi], v=$('tqIn').value.replace(/[^0-9]/g,''); if(!v)return;
+  $('tqIn').disabled=true; $('tqCheck').disabled=true;
+  tqResult(+v===it.ans,null,'The answer is <b>'+fmt(it.ans)+'</b>.');
+}
 function tqPick(k,btn){
-  const it=tq[tqi], ok=it.opts[k]===it.ans;
+  const it=tq[tqi];
   $('tqOpts').querySelectorAll('button').forEach(b=>{b.disabled=true; if(it.opts[+b.dataset.k]===it.ans)b.className='green'});
+  tqResult(it.opts[k]===it.ans,btn);
+}
+function tqResult(ok,btn,extra){
+  const it=tq[tqi];
   if(ok){ding(); if(!it.retry)tqRight++; S.stars++; $('tqFb').innerHTML='<span class="ok pop">Correct! 🌟</span>';}
-  else{bonk(); btn.className='red'; if(!tqMiss.includes(it.i))tqMiss.push(it.i); $('tqFb').innerHTML='<span class="no">Not quite!</span>';
-    if(!it.retry)tq.push({...it,opts:shuffle(it.opts.slice()),retry:true});}
-  $('tqFb').innerHTML+='<div style="font-size:1.05rem;margin-top:6px;font-weight:normal">'+esc(it.why)+'</div>';
-  playSeq([tclip(curTopic,'e',it.i,it.why)]);
+  else{bonk(); if(btn)btn.className='red'; if(!tqMiss.includes(it.why))tqMiss.push(it.why);
+    $('tqFb').innerHTML='<span class="no">Not quite!</span>'+(extra?'<div style="font-size:1.1rem;margin-top:4px">'+extra+'</div>':'');
+    if(!it.retry)tq.push({...it,opts:it.opts&&shuffle(it.opts.slice()),retry:true});}
+  // math explanations are worked steps (HTML we built); written ones are plain text read by Ava
+  $('tqFb').innerHTML+='<div style="font-size:1.05rem;margin-top:6px;font-weight:normal;text-align:left;display:inline-block">'+(it.gen?it.why:esc(it.why))+'</div>';
+  if(!it.gen)playSeq([tclip(curTopic,'e',it.i,it.why)]);
   save(); renderTop();
   $('tqNextBtn').textContent=tqi===tq.length-1?'Finish 🏁':'Next →'; $('tqNext').classList.remove('hidden');
 }
@@ -1360,7 +1678,7 @@ function finishTopicQuiz(){
   $('doneTitle').textContent=pct===1?'Perfect, '+S.name+'! +5 bonus stars!':pct>=.7?'Great job, '+S.name+'!':'Good practice, '+S.name+'!';
   $('doneMsg').textContent=tqRight+' out of '+tqFirst+' right on the first try.';
   $('doneMissed').innerHTML=tqMiss.length?'<div class="hint"><b>Review these:</b>'+
-    tqMiss.map(i=>'<div style="margin-top:6px">'+esc(t.quiz[i][3])+'</div>').join('')+'</div>':'';
+    tqMiss.map(w=>'<div style="margin-top:8px">'+(t.gen?w:esc(w))+'</div>').join('')+'</div>':'';
   go('done');
 }
 
